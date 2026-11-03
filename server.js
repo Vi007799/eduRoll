@@ -31,7 +31,7 @@ const pool = new Pool({
   connectionTimeoutMillis: 8000
 });
 const mailer = makeMailer();
-const PgSession = connectPgSimple(session);
+// const PgSession = connectPgSimple(session);
 
 app.disable("x-powered-by");
 const trustProxy = Number(process.env.TRUST_PROXY || (isProduction ? 1 : 0));
