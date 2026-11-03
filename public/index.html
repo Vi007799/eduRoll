@@ -10,9 +10,12 @@
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="stylesheet" href="/styles.css">
+  <script src="/scene3d.js" defer></script>
   <script src="/app.js" defer></script>
 </head>
 <body>
+  <canvas id="worldCanvas" class="world-canvas" aria-hidden="true"></canvas>
+  <div class="scene-vignette" aria-hidden="true"></div>
   <div class="site-noise" aria-hidden="true"></div>
   <header class="topbar">
     <a class="brand" href="/" aria-label="eduRoll home">
@@ -48,6 +51,7 @@
           <button class="button button-primary" id="searchButton" type="submit">Explore <span aria-hidden="true">↗</span></button>
         </form>
         <div class="search-meta"><span class="search-meta-mark">✳</span> Source-grounded learning · Your progress is saved when you sign in</div>
+        <p class="adult-notice">eduRoll is temporarily available only to adults aged 18 and over.</p>
         <div class="suggestions" aria-label="Example searches">
           <span>TRY</span>
           <button type="button" data-query="Basics of Python">Basics of Python</button>
@@ -121,6 +125,7 @@
       <form id="loginForm" class="auth-form">
         <label>Email address<input type="email" name="email" autocomplete="email" maxlength="254" required></label>
         <label>Password<input type="password" name="password" autocomplete="current-password" required></label>
+        <label class="consent-label"><input type="checkbox" name="adultConfirmation" required><span>I confirm that I am 18 years of age or older.</span></label>
         <button class="button button-primary auth-submit" type="submit">Sign in <span>↗</span></button>
         <div class="auth-secondary-actions"><button class="text-button" id="forgotPasswordButton" type="button">Forgot password?</button></div>
       </form>
@@ -128,6 +133,7 @@
         <label>Your name<input type="text" name="displayName" autocomplete="name" minlength="2" maxlength="70" required></label>
         <label>Email address<input type="email" name="email" autocomplete="email" maxlength="254" required></label>
         <label>Password <span class="field-hint">12+ characters, upper/lowercase and a number</span><input type="password" name="password" autocomplete="new-password" minlength="12" maxlength="128" required></label>
+        <label class="consent-label"><input type="checkbox" name="adultConfirmation" required><span>I confirm that I am 18 years of age or older. eduRoll is currently restricted to adults.</span></label>
         <label class="consent-label"><input type="checkbox" name="consent" required><span>I agree to the <a href="/terms.html" target="_blank" rel="noopener">Terms</a> and <a href="/privacy.html" target="_blank" rel="noopener">Privacy Policy</a>.</span></label>
         <button class="button button-primary auth-submit" type="submit">Create account <span>↗</span></button>
       </form>
@@ -141,7 +147,7 @@
         <button class="button button-primary auth-submit" type="submit">Update password <span>↗</span></button>
       </form>
       <p class="auth-feedback" id="authFeedback" role="status"></p>
-      <p class="auth-footnote">Your learning history is private to your account.</p>
+      <p class="auth-footnote">Adult-only access (18+). Do not submit personal or sensitive information in learning prompts. Adult status is self-declared, not independently verified.</p>
     </section>
   </div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
