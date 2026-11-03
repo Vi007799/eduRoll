@@ -115,7 +115,7 @@ function requireAuth(req, res, next) {
   pool.query("SELECT adult_confirmed_at FROM users WHERE id=$1", [req.session.userId])
     .then(result => {
       if (!result.rowCount) return req.session.destroy(() => res.status(401).json({ error: "Your account session is no longer valid. Please sign in again." }));
-      if (!result.rows[0].adult_confirmed_at) return res.status(403).json({ error: "Adult confirmation is required. Please sign in again and confirm that you are 18 or older." });
+      if (!result.rows[0].adult_confirmed_at) return req.session.destroy(() => res.status(401).json({ error: "Please sign in again and confirm that you are 18 or older to continue." }));
       next();
     })
     .catch(next);
