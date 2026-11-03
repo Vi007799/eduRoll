@@ -39,7 +39,7 @@
         vec2 p = gl_PointCoord - vec2(0.5);
         float d = length(p);
         if (d > 0.5) discard;
-        float glow = smoothstep(0.5, 0.02, d);
+        float glow = 1.0 - smoothstep(0.02, 0.5, d);
         gl_FragColor = vec4(vColor, glow * (0.45 + (1.0 - vDepth) * 0.5));
       } else {
         gl_FragColor = vec4(vColor, 0.19 * (1.0 - vDepth * 0.65));
@@ -161,8 +161,8 @@
     if (!area) return;
     // Trackpad two-finger scroll pans the 3D camera. It does not capture pointer movement,
     // so one-finger cursor movement and normal clicking remain unchanged.
-    targetX = Math.max(-13, Math.min(13, targetX + event.deltaX * 0.008));
-    targetY = Math.max(-8, Math.min(8, targetY + event.deltaY * 0.008));
+    targetX = Math.max(-13, Math.min(13, targetX - event.deltaX * 0.008));
+    targetY = Math.max(-8, Math.min(8, targetY - event.deltaY * 0.008));
   }, { passive: true });
   window.addEventListener("pointermove", event => {
     pointerX = (event.clientX / Math.max(1, window.innerWidth) - 0.5) * 2;
