@@ -145,6 +145,8 @@
     cameraY += (targetY - cameraY) * 0.12;
     gl.clearColor(0.965, 0.975, 0.995, 0.0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.enable(gl.DEPTH_TEST);
+    gl.depthFunc(gl.LEQUAL);
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     gl.uniformMatrix4fv(uniforms.projection, false, perspective(0.82, width / height, 0.1, 100));
