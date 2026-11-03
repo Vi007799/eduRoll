@@ -12,3 +12,27 @@
 .learning-node .key-point{transform:translateZ(18px)}
 .learning-node .node-actions{transform:translateZ(9px)}
 @media(prefers-reduced-motion:reduce){.learning-node .node-index,.learning-node .node-heading h3,.learning-node .node-summary,.learning-node .node-content,.learning-node .key-point,.learning-node .node-actions{transform:none!important}}
+
+/* Interactive 3D knowledge environment */
+body{isolation:isolate}
+.world-canvas{position:fixed;inset:0;z-index:0;display:block;width:100%;height:100%;pointer-events:none;opacity:.88;mix-blend-mode:multiply}
+.scene-vignette{position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse at 52% 44%,transparent 0%,rgba(238,243,252,.12) 48%,rgba(232,239,250,.55) 100%)}
+.site-noise,header,main,footer{position:relative;z-index:1}
+.hero{perspective:1700px;transform-style:preserve-3d}
+.hero-copy{position:relative;z-index:2;transform:translateZ(42px);transform-style:preserve-3d}
+.hero-art{transform-style:preserve-3d;filter:drop-shadow(0 25px 45px rgba(57,78,140,.08))}
+.hero h1{text-shadow:0 8px 30px rgba(65,88,150,.06)}
+.learning-view{perspective:1800px;transform-style:preserve-3d}
+.journey-body{transform-style:preserve-3d;transform:translateZ(0)}
+.intro-block{transform:translateZ(34px);box-shadow:0 35px 85px rgba(26,48,88,.2),0 8px 24px rgba(40,65,120,.08)}
+.learning-node{transform:perspective(1500px) translate3d(0,var(--node-lift,0px),var(--node-depth,0px)) rotateX(var(--node-tilt,0deg));box-shadow:0 28px 60px rgba(43,62,104,.09),0 4px 12px rgba(43,62,104,.04)}
+.learning-node:hover{border-color:#bdc9ef;box-shadow:0 35px 75px rgba(43,62,104,.13),0 8px 20px rgba(43,62,104,.06)}
+.learning-node .node-heading h3{transform:translateZ(42px)}
+.learning-node .node-index{transform:translateZ(28px)}
+.learning-node .node-summary{transform:translateZ(24px)}
+.learning-node .node-content{transform:translateZ(17px)}
+.learning-node .key-point{transform:translateZ(22px)}
+.adult-notice{font-size:10px;color:#8a94a8;margin:10px 0 0}
+.auth-footnote{line-height:1.6}
+@media(max-width:650px){.world-canvas{opacity:.5}.scene-vignette{background:linear-gradient(180deg,rgba(245,247,251,.08),rgba(245,247,251,.35))}.hero-copy{transform:translateZ(20px)}.learning-node{transform:perspective(1200px) translate3d(0,var(--node-lift,0px),var(--node-depth,0px)) rotateX(var(--node-tilt,0deg))}}
+@media(prefers-reduced-motion:reduce){.world-canvas{opacity:.25}.hero-copy,.intro-block{transform:none!important}.learning-node{transform:none!important}}
