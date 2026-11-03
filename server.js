@@ -103,7 +103,7 @@ const registerSchema = z.object({
   consent: z.literal(true),
   adultConfirmation: z.literal(true)
 }).strict();
-const loginSchema = z.object({ email: emailSchema, password: z.string().min(1).max(128), adultConfirmation: z.literal(true) }).strict();
+const loginSchema = z.object({ email: emailSchema, password: z.string().min(1).max(128), adultConfirmation: z.literal(true), consent: z.literal(true) }).strict();
 const searchSchema = z.object({ query: z.string().trim().min(2).max(180) }).strict();
 const branchSchema = z.object({ parentNodeId: z.string().uuid(), prompt: z.string().trim().min(2).max(500) }).strict();
 const followupSchema = z.object({ query: z.string().trim().min(2).max(180), contextNodeId: z.string().uuid().optional() }).strict();
@@ -253,7 +253,7 @@ app.post("/api/auth/register", authLimiter, asyncRoute(async (req, res) => {
       [email, passwordHash, displayName]
     );
     user = created.rows[0];
-    await client.query("INSERT INTO user_consents (user_id,terms_version,privacy_version) VALUES ($1,'2026-11-03','2026-11-03')", [user.id]);
+    await client.query("INSERT INTO user_consents (user_id,terms_version,privacy_version) VALUES ($1,'2026-11-03-adult-v1','2026-11-03-adult-v1')", [user.id]);
     await client.query("COMMIT");
   } catch (error) {
     await client.query("ROLLBACK");
@@ -271,6 +271,7 @@ app.post("/api/auth/login", authLimiter, asyncRoute(async (req, res) => {
   const valid = user ? await argon2.verify(user.password_hash, parsed.data.password).catch(() => false) : false;
   if (!valid) return res.status(401).json({ error: "The email or password is incorrect." });
   await pool.query("UPDATE users SET adult_confirmed_at=NOW() WHERE id=$1", [user.id]);
+  await pool.query(`INSERT INTO user_consents (user_id,terms_version,privacy_version) VALUES ($1,'2026-11-03-adult-v1','2026-11-03-adult-v1') ON CONFLICT (user_id) DO UPDATE SET terms_version=EXCLUDED.terms_version,privacy_version=EXCLUDED.privacy_version,accepted_at=NOW()`, [user.id]);
   user.adult_confirmed_at = new Date();
   await regenerateSession(req);
   req.session.userId = user.id;
