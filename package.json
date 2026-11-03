@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "check": "node --check server.js && node --check public/app.js && node --check lib/auth.js && node --check lib/learning.js",
+    "check": "node --check server.js && node --check public/app.js && node --check public/scene3d.js && node --check lib/auth.js && node --check lib/learning.js",
     "test": "node --test",
     "db:migrate": "node db/migrate.js"
   },
