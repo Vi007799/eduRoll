@@ -169,8 +169,12 @@
     pointerY = (event.clientY / Math.max(1, window.innerHeight) - 0.5) * 2;
   }, { passive: true });
   document.addEventListener("visibilitychange", () => {
-    if (document.hidden) cancelAnimationFrame(frame);
-    else if (!frame) frame = requestAnimationFrame(render);
+    if (document.hidden) {
+      cancelAnimationFrame(frame);
+      frame = 0;
+    } else if (!frame) {
+      frame = requestAnimationFrame(render);
+    }
   });
   resize();
   frame = requestAnimationFrame(render);
