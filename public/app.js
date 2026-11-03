@@ -74,7 +74,6 @@ function setAuthMode(mode) {
   $("#authDescription").textContent = mode === "register" ? "Create an account to save every path, branch and discovery." : mode === "resetRequest" ? "We'll send a secure reset link if an account exists." : mode === "resetComplete" ? "Choose a strong password you haven't used before." : "Sign in to continue learning and keep your progress across devices.";
   document.querySelectorAll("[data-auth-mode]").forEach(button => button.classList.toggle("active", button.dataset.authMode === mode));
   setAuthFeedback("");
-  $("#resendVerificationButton").hidden = true;
 }
 function openAuth(mode = "login") {
   $("#accountMenu").hidden = true;
@@ -92,14 +91,7 @@ async function initialize() {
     state.user = user;
     updateAccountUI();
     const params = new URLSearchParams(location.search);
-    if (params.has("verify")) {
-      openAuth("login");
-      try {
-        const result = await api("/api/auth/verify", { method: "POST", body: JSON.stringify({ token: params.get("verify") }) });
-        setAuthFeedback(result.message);
-      } catch (error) { setAuthFeedback(error.message, true); }
-      history.replaceState({}, "", location.pathname);
-    } else if (params.has("reset")) {
+    if (params.has("reset")) {
       state.resetToken = params.get("reset");
       openAuth("resetComplete");
       history.replaceState({}, "", location.pathname);
@@ -122,7 +114,6 @@ async function handleLogin(event) {
     if (state.lastQuery) runSearch(state.lastQuery);
   } catch (error) {
     setAuthFeedback(error.message, true);
-    $("#resendVerificationButton").hidden = !error.message.toLowerCase().includes("verify your email");
   }
   finally { submit.disabled = false; }
 }
@@ -138,11 +129,7 @@ async function handleRegister(event) {
     setAuthMode("login");
     setAuthFeedback(result.message);
   } catch (error) {
-    if (error.message.toLowerCase().includes("verification email")) {
-      setAuthMode("login");
-      setAuthFeedback(error.message, true);
-      $("#resendVerificationButton").hidden = false;
-    } else setAuthFeedback(error.message, true);
+    setAuthFeedback(error.message, true);
   }
   finally { submit.disabled = false; }
 }
@@ -464,11 +451,6 @@ $("#registerForm").addEventListener("submit", handleRegister);
 $("#resetRequestForm").addEventListener("submit", handleResetRequest);
 $("#resetCompleteForm").addEventListener("submit", handleResetComplete);
 $("#forgotPasswordButton").addEventListener("click", () => setAuthMode("resetRequest"));
-$("#resendVerificationButton").addEventListener("click", async () => {
-  const email = new FormData($("#loginForm")).get("email");
-  try { const result = await api("/api/auth/verification/resend", { method: "POST", body: JSON.stringify({ email }) }); setAuthFeedback(result.message); }
-  catch (error) { setAuthFeedback(error.message, true); }
-});
 $("#accountButton").addEventListener("click", () => { $("#accountMenu").hidden = !$("#accountMenu").hidden; });
 document.addEventListener("click", event => { if (!event.target.closest(".account-actions")) $("#accountMenu").hidden = true; });
 $("#logoutButton").addEventListener("click", async () => {
