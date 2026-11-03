@@ -21,10 +21,13 @@ function setAuthFeedback(message, isError = false) {
   authFeedback.classList.toggle("error", isError);
 }
 function showView(view) {
+  $("#home").hidden = view !== "home";
+  $("#how-it-works").hidden = view !== "home";
   $("#learningView").hidden = view !== "learning";
   $("#loadingView").hidden = view !== "loading";
   $("#errorView").hidden = view !== "error";
   if (view === "home") window.scrollTo({ top: 0, behavior: "smooth" });
+  else if (view === "loading" || view === "error") window.scrollTo({ top: 0, behavior: "instant" });
 }
 async function refreshCsrf() {
   const response = await fetch("/api/csrf", { credentials: "same-origin", cache: "no-store" });
