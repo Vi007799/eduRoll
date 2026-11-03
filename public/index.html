@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f7fb">
+  <meta name="description" content="Learn anything progressively with eduRoll. Start with the basics, scroll deeper, and explore every branch of knowledge.">
+  <meta name="color-scheme" content="light">
+  <title>eduRoll — Explore knowledge, one scroll at a time</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <div class="site-noise" aria-hidden="true"></div>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="eduRoll home">
+      <span class="brand-symbol" aria-hidden="true"><span></span><span></span><span></span></span>
+      <span>edu<span class="brand-accent">Roll</span></span>
+    </a>
+    <nav class="top-nav" aria-label="Main navigation">
+      <a href="#how-it-works">How it works</a>
+      <a href="#my-learning" id="myLearningNav" hidden>My learning</a>
+    </nav>
+    <div class="account-actions">
+      <span class="account-status" id="accountStatus" hidden></span>
+      <button class="button button-quiet" id="authOpenButton" type="button">Sign in <span aria-hidden="true">↗</span></button>
+      <button class="avatar-button" id="accountButton" type="button" aria-label="Account menu" hidden></button>
+      <div class="account-menu" id="accountMenu" hidden>
+        <div class="account-menu-user" id="accountMenuUser"></div>
+        <button type="button" id="exportButton">Export my data</button>
+        <button type="button" id="logoutButton">Sign out</button><button type="button" id="deleteAccountButton" class="danger-action">Delete account</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" id="home">
+      <div class="hero-copy">
+        <div class="eyebrow"><span class="eyebrow-pulse"></span> A NEW WAY TO UNDERSTAND THE WORLD</div>
+        <h1>Curiosity has<br><span class="gradient-words">room to grow.</span></h1>
+        <p class="hero-subtitle">Start with one simple idea. Keep scrolling to uncover the layers beneath it.</p>
+        <form class="search-form" id="searchForm" autocomplete="off">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg>
+          <label class="sr-only" for="searchInput">What would you like to understand?</label>
+          <input id="searchInput" name="query" type="search" maxlength="180" minlength="2" placeholder="What would you like to understand?" required>
+          <button class="button button-primary" id="searchButton" type="submit">Explore <span aria-hidden="true">↗</span></button>
+        </form>
+        <div class="search-meta"><span class="search-meta-mark">✳</span> Source-grounded learning · Your progress is saved when you sign in</div>
+        <div class="suggestions" aria-label="Example searches">
+          <span>TRY</span>
+          <button type="button" data-query="Basics of Python">Basics of Python</button>
+          <button type="button" data-query="How to deploy a website?">Deploy a website</button>
+          <button type="button" data-query="How does artificial intelligence work?">Artificial intelligence</button>
+        </div>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <div class="art-orbit orbit-a"></div><div class="art-orbit orbit-b"></div><div class="art-orbit orbit-c"></div>
+        <div class="art-core"><span class="core-dot"></span><span class="core-line"></span><span class="core-line short"></span></div>
+        <div class="art-chip chip-one">IDEA <span>01</span></div>
+        <div class="art-chip chip-two">EXPLORE <span>↗</span></div>
+        <div class="art-chip chip-three">UNDERSTAND <span>∞</span></div>
+      </div>
+      <div class="hero-bottom-note"><span>SCROLL TO DISCOVER</span><span class="scroll-arrow">↓</span></div>
+    </section>
+
+    <section class="how-section" id="how-it-works">
+      <div class="section-intro">
+        <div class="eyebrow">LEARNING, REIMAGINED</div>
+        <h2>One question.<br><span>Endless directions.</span></h2>
+        <p>eduRoll turns a search into a learning path. Follow the main idea, open a deeper branch whenever you want, and let curiosity decide where to go next.</p>
+      </div>
+      <div class="how-steps">
+        <article><span class="how-number">01</span><h3>Begin simply</h3><p>Get the clearest possible introduction before the details.</p></article>
+        <article><span class="how-number">02</span><h3>Scroll deeper</h3><p>Move through connected stages that build understanding naturally.</p></article>
+        <article><span class="how-number">03</span><h3>Explore a branch</h3><p>Elaborate any idea and open a deeper path without losing your place.</p></article>
+      </div>
+    </section>
+
+    <section class="learning-view" id="learningView" hidden aria-live="polite">
+      <div class="learning-topline">
+        <div><div class="eyebrow"><span class="eyebrow-pulse"></span> YOUR LEARNING JOURNEY</div><h2 id="journeyTitle"></h2><p id="journeyContext" class="journey-context"></p></div>
+        <div class="journey-nav-actions"><button class="button button-quiet" id="backParentButton" type="button" hidden>← Parent journey</button><button class="button button-outline" id="backHomeButton" type="button">New search <span aria-hidden="true">↗</span></button></div>
+      </div>
+      <div class="journey-progress" aria-label="Reading progress"><div id="journeyProgressFill"></div></div>
+      <div class="journey-body" id="journeyBody"></div>
+      <section class="sources-section" id="sourcesSection" hidden>
+        <div class="eyebrow">FOLLOW THE SOURCES</div>
+        <h3>Go a little further.</h3>
+        <p>Explore the original material and verify important details. Source links are supplied by the search-grounded learning engine.</p>
+        <div class="sources-grid" id="sourcesGrid"></div>
+      </section>
+      <div class="journey-end"><span class="end-spark">✳</span><h3>Curiosity doesn't have to stop here.</h3><p>Ask another question or follow a branch that caught your attention.</p><form class="followup-form" id="endFollowupForm"><input name="query" maxlength="180" placeholder="What are you curious about next?" required><button type="submit" aria-label="Explore follow-up">↗</button></form></div>
+    </section>
+
+    <section class="loading-view" id="loadingView" hidden aria-live="polite">
+      <div class="loading-orbit"><span></span><span></span><span></span></div>
+      <h2>Following the thread...</h2><p>Researching the topic and shaping your next learning path.</p>
+    </section>
+    <section class="error-view" id="errorView" hidden role="alert">
+      <div class="error-mark">!</div><h2>We hit a pause.</h2><p id="errorMessage">We couldn't complete that request.</p><button class="button button-primary" id="retryButton" type="button">Try again</button>
+    </section>
+
+    <section class="my-learning" id="my-learning" hidden>
+      <div class="my-learning-heading"><div><div class="eyebrow">PICK UP WHERE YOU LEFT OFF</div><h2>Your learning paths</h2></div><button class="button button-quiet" id="refreshHistoryButton" type="button">Refresh ↻</button></div>
+      <div class="history-grid" id="historyGrid"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer"><a class="brand footer-brand" href="/">edu<span class="brand-accent">Roll</span></a><span>Explore responsibly. Stay curious.</span><span>© <span id="year"></span> eduRoll</span></footer>
+
+  <div class="modal-backdrop" id="authModal" hidden>
+    <section class="auth-dialog" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+      <button class="modal-close" id="authCloseButton" type="button" aria-label="Close">×</button>
+      <div class="auth-brand-mark">e<span>R</span></div>
+      <div class="eyebrow">YOUR KNOWLEDGE, YOUR JOURNEY</div>
+      <h2 id="authTitle">Welcome back.</h2>
+      <p class="auth-description" id="authDescription">Sign in to continue learning and keep your progress across devices.</p>
+      <div class="auth-tabs" id="authTabs"><button class="active" type="button" data-auth-mode="login">Sign in</button><button type="button" data-auth-mode="register">Create account</button></div>
+      <form id="loginForm" class="auth-form">
+        <label>Email address<input type="email" name="email" autocomplete="email" maxlength="254" required></label>
+        <label>Password<input type="password" name="password" autocomplete="current-password" required></label>
+        <button class="button button-primary auth-submit" type="submit">Sign in <span>↗</span></button>
+        <div class="auth-secondary-actions"><button class="text-button" id="forgotPasswordButton" type="button">Forgot password?</button><button class="text-button" id="resendVerificationButton" type="button" hidden>Resend verification email</button></div>
+      </form>
+      <form id="registerForm" class="auth-form" hidden>
+        <label>Your name<input type="text" name="displayName" autocomplete="name" minlength="2" maxlength="70" required></label>
+        <label>Email address<input type="email" name="email" autocomplete="email" maxlength="254" required></label>
+        <label>Password <span class="field-hint">12+ characters, upper/lowercase and a number</span><input type="password" name="password" autocomplete="new-password" minlength="12" maxlength="128" required></label>
+        <label class="consent-label"><input type="checkbox" name="consent" required><span>I agree to the <a href="/terms.html" target="_blank" rel="noopener">Terms</a> and <a href="/privacy.html" target="_blank" rel="noopener">Privacy Policy</a>.</span></label>
+        <button class="button button-primary auth-submit" type="submit">Create account <span>↗</span></button>
+      </form>
+      <form id="resetRequestForm" class="auth-form" hidden>
+        <label>Email address<input type="email" name="email" autocomplete="email" required></label>
+        <button class="button button-primary auth-submit" type="submit">Send reset link <span>↗</span></button>
+        <button class="text-button" type="button" data-auth-mode="login">Back to sign in</button>
+      </form>
+      <form id="resetCompleteForm" class="auth-form" hidden>
+        <label>New password<input type="password" name="password" autocomplete="new-password" minlength="12" maxlength="128" required></label>
+        <button class="button button-primary auth-submit" type="submit">Update password <span>↗</span></button>
+      </form>
+      <p class="auth-feedback" id="authFeedback" role="status"></p>
+      <p class="auth-footnote">Your learning history is private to your account.</p>
+    </section>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

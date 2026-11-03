@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+
+# Build, test and runtime artifacts
+coverage/
+dist/
+build/
+*.log
+npm-debug.log*
+
+# Local databases, dumps and backups
+*.sqlite
+*.sqlite3
+*.db
+*.dump
+*.sql.gz
+
+# OS/editor metadata
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Local uploads and generated user data
+uploads/
+storage/

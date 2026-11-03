@@ -1,0 +1,10 @@
+{
+  "name": "eduRoll — Explore knowledge",
+  "short_name": "eduRoll",
+  "description": "Explore knowledge progressively, one scroll at a time.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f5f7fb",
+  "theme_color": "#f5f7fb",
+  "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}
