@@ -240,7 +240,6 @@ app.get("/api/csrf", (req, res) => {
 app.post("/api/auth/register", authLimiter, asyncRoute(async (req, res) => {
   const parsed = registerSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: parsed.error.issues[0]?.message || "Check your account details." });
-  if (isProduction && !mailer) return res.status(503).json({ error: "Email verification is temporarily unavailable. Please try again later." });
   const { email, password, displayName } = parsed.data;
   const passwordHash = await argon2.hash(password, { type: argon2.argon2id, memoryCost: 19456, timeCost: 2, parallelism: 1 });
   const client = await pool.connect();
@@ -248,7 +247,7 @@ app.post("/api/auth/register", authLimiter, asyncRoute(async (req, res) => {
   try {
     await client.query("BEGIN");
     const created = await client.query(
-      "INSERT INTO users (email,password_hash,display_name) VALUES ($1,$2,$3) RETURNING id,email,display_name,email_verified_at,created_at",
+      "INSERT INTO users (email,password_hash,display_name,email_verified_at) VALUES ($1,$2,$3,NOW()) RETURNING id,email,display_name,email_verified_at,created_at",
       [email, passwordHash, displayName]
     );
     user = created.rows[0];
@@ -259,42 +258,7 @@ app.post("/api/auth/register", authLimiter, asyncRoute(async (req, res) => {
     if (error.code === "23505") return res.status(409).json({ error: "An account with this email already exists. Sign in instead." });
     throw error;
   } finally { client.release(); }
-  try { await deliverToken({ pool, mailer, user, purpose: "verify_email" }); }
-  catch (error) {
-    console.error(JSON.stringify({ event: "verification_email_failed", userId: user.id, message: error.message }));
-    return res.status(503).json({ error: "Your account was created, but we couldn't send the verification email. Contact support before trying again." });
-  }
-  res.status(201).json({ message: "Account created. Check your email for a verification link before signing in." });
-}));
-
-app.post("/api/auth/verify", authLimiter, asyncRoute(async (req, res) => {
-  const token = z.string().min(20).max(200).safeParse(req.body?.token);
-  if (!token.success) return res.status(400).json({ error: "This verification link is invalid or expired." });
-  const client = await pool.connect();
-  try {
-    await client.query("BEGIN");
-    const result = await client.query(
-      `SELECT et.id,et.user_id FROM email_tokens et WHERE et.token_hash=$1 AND et.purpose='verify_email' AND et.consumed_at IS NULL AND et.expires_at>NOW() FOR UPDATE`,
-      [hashToken(token.data)]
-    );
-    if (!result.rowCount) { await client.query("ROLLBACK"); return res.status(400).json({ error: "This verification link is invalid or expired." }); }
-    await client.query("UPDATE users SET email_verified_at=NOW(),updated_at=NOW() WHERE id=$1", [result.rows[0].user_id]);
-    await client.query("UPDATE email_tokens SET consumed_at=NOW() WHERE id=$1", [result.rows[0].id]);
-    await client.query("COMMIT");
-    res.json({ message: "Your email is verified. You can now sign in." });
-  } catch (error) { await client.query("ROLLBACK"); throw error; }
-  finally { client.release(); }
-}));
-
-app.post("/api/auth/verification/resend", authLimiter, asyncRoute(async (req, res) => {
-  const parsed = z.object({ email: emailSchema }).safeParse(req.body);
-  if (!parsed.success) return res.status(400).json({ error: "Enter a valid email address." });
-  const { rows } = await pool.query("SELECT id,email,display_name,email_verified_at FROM users WHERE email=$1", [parsed.data.email]);
-  if (rows[0] && !rows[0].email_verified_at) {
-    try { await deliverToken({ pool, mailer, user: rows[0], purpose: "verify_email" }); }
-    catch (error) { console.error(JSON.stringify({ event: "verification_resend_failed", message: error.message })); }
-  }
-  res.json({ message: "If the account needs verification, a new link has been sent." });
+  res.status(201).json({ message: "Account created successfully. You can now sign in." });
 }));
 
 app.post("/api/auth/login", authLimiter, asyncRoute(async (req, res) => {
@@ -304,7 +268,6 @@ app.post("/api/auth/login", authLimiter, asyncRoute(async (req, res) => {
   const user = rows[0];
   const valid = user ? await argon2.verify(user.password_hash, parsed.data.password).catch(() => false) : false;
   if (!valid) return res.status(401).json({ error: "The email or password is incorrect." });
-  if (!user.email_verified_at) return res.status(403).json({ error: "Please verify your email before signing in. Check your inbox for the verification link." });
   await regenerateSession(req);
   req.session.userId = user.id;
   req.session.csrfToken = csrfToken();
