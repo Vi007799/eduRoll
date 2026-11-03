@@ -7,7 +7,7 @@ const helmet = require("helmet");
 const compression = require("compression");
 const rateLimit = require("express-rate-limit");
 const session = require("express-session");
-const PgSimple = require("connect-pg-simple")(session);
+const PgSession = require("connect-pg-simple")(session);
 const { Pool } = require("pg");
 const { z } = require("zod");
 const { argon2, safeUser, makeMailer, deliverToken, hashToken, regenerateSession, saveSession } = require("./lib/auth");
@@ -31,7 +31,6 @@ const pool = new Pool({
   connectionTimeoutMillis: 8000
 });
 const mailer = makeMailer();
-// const PgSession = connectPgSimple(session);
 
 app.disable("x-powered-by");
 const trustProxy = Number(process.env.TRUST_PROXY || (isProduction ? 1 : 0));
