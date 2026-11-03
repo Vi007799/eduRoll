@@ -102,7 +102,9 @@ async function initialize() {
 async function handleLogin(event) {
   event.preventDefault();
   const data = Object.fromEntries(new FormData(event.currentTarget));
-  data.adultConfirmation = Boolean(new FormData(event.currentTarget).get("adultConfirmation"));
+  const submitted = new FormData(event.currentTarget);
+  data.adultConfirmation = Boolean(submitted.get("adultConfirmation"));
+  data.consent = Boolean(submitted.get("consent"));
   const submit = event.currentTarget.querySelector("button[type=submit]");
   submit.disabled = true;
   try {
