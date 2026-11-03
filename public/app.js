@@ -102,6 +102,7 @@ async function initialize() {
 async function handleLogin(event) {
   event.preventDefault();
   const data = Object.fromEntries(new FormData(event.currentTarget));
+  data.adultConfirmation = Boolean(new FormData(event.currentTarget).get("adultConfirmation"));
   const submit = event.currentTarget.querySelector("button[type=submit]");
   submit.disabled = true;
   try {
@@ -120,7 +121,9 @@ async function handleLogin(event) {
 async function handleRegister(event) {
   event.preventDefault();
   const data = Object.fromEntries(new FormData(event.currentTarget));
-  data.consent = Boolean(new FormData(event.currentTarget).get("consent"));
+  const submitted = new FormData(event.currentTarget);
+  data.consent = Boolean(submitted.get("consent"));
+  data.adultConfirmation = Boolean(submitted.get("adultConfirmation"));
   const submit = event.currentTarget.querySelector("button[type=submit]");
   submit.disabled = true;
   try {
@@ -416,11 +419,11 @@ function updateScrollScene() {
   nodes.forEach(node => {
     const rect = node.getBoundingClientRect();
     const distance = (rect.top + rect.height * 0.32 - viewportCenter) / Math.max(window.innerHeight, 1);
-    const tilt = Math.max(-5.5, Math.min(5.5, distance * -7.2));
-    const depth = Math.max(-34, Math.min(0, Math.abs(distance) * -25));
+    const tilt = Math.max(-9, Math.min(9, distance * -11));
+    const depth = Math.max(-72, Math.min(0, Math.abs(distance) * -48));
     node.style.setProperty("--node-tilt", `${tilt.toFixed(2)}deg`);
     node.style.setProperty("--node-depth", `${depth.toFixed(1)}px`);
-    node.style.setProperty("--node-lift", `${Math.max(-6, Math.min(6, distance * -5)).toFixed(1)}px`);
+    node.style.setProperty("--node-lift", `${Math.max(-10, Math.min(10, distance * -8)).toFixed(1)}px`);
   });
   if (state.journey) {
     const max = document.documentElement.scrollHeight - window.innerHeight;
