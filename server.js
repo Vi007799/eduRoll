@@ -100,9 +100,10 @@ const registerSchema = z.object({
   email: emailSchema,
   password: z.string().min(12).max(128).refine(v => /[a-z]/.test(v) && /[A-Z]/.test(v) && /\d/.test(v), "Use at least 12 characters with upper-case, lower-case and a number."),
   displayName: z.string().trim().min(2).max(70),
-  consent: z.literal(true)
+  consent: z.literal(true),
+  adultConfirmation: z.literal(true)
 }).strict();
-const loginSchema = z.object({ email: emailSchema, password: z.string().min(1).max(128) }).strict();
+const loginSchema = z.object({ email: emailSchema, password: z.string().min(1).max(128), adultConfirmation: z.literal(true) }).strict();
 const searchSchema = z.object({ query: z.string().trim().min(2).max(180) }).strict();
 const branchSchema = z.object({ parentNodeId: z.string().uuid(), prompt: z.string().trim().min(2).max(500) }).strict();
 const followupSchema = z.object({ query: z.string().trim().min(2).max(180), contextNodeId: z.string().uuid().optional() }).strict();
@@ -111,15 +112,16 @@ const progressSchema = z.object({ journeyId: z.string().uuid(), currentNodeId: z
 function asyncRoute(handler) { return (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next); }
 function requireAuth(req, res, next) {
   if (!req.session?.userId) return res.status(401).json({ error: "Sign in to save and continue your learning journeys." });
-  pool.query("SELECT 1 FROM users WHERE id=$1", [req.session.userId])
+  pool.query("SELECT adult_confirmed_at FROM users WHERE id=$1", [req.session.userId])
     .then(result => {
       if (!result.rowCount) return req.session.destroy(() => res.status(401).json({ error: "Your account session is no longer valid. Please sign in again." }));
+      if (!result.rows[0].adult_confirmed_at) return res.status(403).json({ error: "Adult confirmation is required. Please sign in again and confirm that you are 18 or older." });
       next();
     })
     .catch(next);
 }
 async function getUser(req) {
-  const { rows } = await pool.query("SELECT id,email,display_name,email_verified_at,created_at FROM users WHERE id=$1", [req.session.userId]);
+  const { rows } = await pool.query("SELECT id,email,display_name,email_verified_at,adult_confirmed_at,created_at FROM users WHERE id=$1", [req.session.userId]);
   return rows[0] || null;
 }
 function normalizeSources(citations) {
@@ -247,7 +249,7 @@ app.post("/api/auth/register", authLimiter, asyncRoute(async (req, res) => {
   try {
     await client.query("BEGIN");
     const created = await client.query(
-      "INSERT INTO users (email,password_hash,display_name,email_verified_at) VALUES ($1,$2,$3,NOW()) RETURNING id,email,display_name,email_verified_at,created_at",
+      "INSERT INTO users (email,password_hash,display_name,email_verified_at,adult_confirmed_at) VALUES ($1,$2,$3,NOW(),NOW()) RETURNING id,email,display_name,email_verified_at,adult_confirmed_at,created_at",
       [email, passwordHash, displayName]
     );
     user = created.rows[0];
@@ -268,6 +270,8 @@ app.post("/api/auth/login", authLimiter, asyncRoute(async (req, res) => {
   const user = rows[0];
   const valid = user ? await argon2.verify(user.password_hash, parsed.data.password).catch(() => false) : false;
   if (!valid) return res.status(401).json({ error: "The email or password is incorrect." });
+  await pool.query("UPDATE users SET adult_confirmed_at=NOW() WHERE id=$1", [user.id]);
+  user.adult_confirmed_at = new Date();
   await regenerateSession(req);
   req.session.userId = user.id;
   req.session.csrfToken = csrfToken();
@@ -316,7 +320,7 @@ app.post("/api/auth/password-reset/complete", authLimiter, asyncRoute(async (req
 app.get("/api/auth/me", asyncRoute(async (req, res) => {
   if (!req.session?.userId) return res.json({ user: null });
   const user = await getUser(req);
-  if (!user) { req.session.destroy(() => {}); return res.json({ user: null }); }
+  if (!user || !user.adult_confirmed_at) { req.session.destroy(() => {}); return res.json({ user: null, adultConfirmationRequired: true }); }
   res.set("Cache-Control", "no-store");
   res.json({ user: safeUser(user) });
 }));
@@ -477,7 +481,10 @@ app.get("*", (_req, res) => res.sendFile(path.join(__dirname, "public", "index.h
 app.use((error, _req, res, _next) => {
   const status = Number(error.status) || 500;
   if (status >= 500) console.error(JSON.stringify({ event: "request_error", status, message: error.message, name: error.name }));
-  res.status(status).json({ error: status >= 500 ? "Something went wrong. Please try again." : error.message });
+  const publicMessage = status >= 500
+    ? (status === 502 || status === 503 || status === 504 ? error.message : "The server could not complete this request. Please try again.")
+    : error.message;
+  res.status(status).json({ error: publicMessage });
 });
 
 pool.on("error", error => console.error(JSON.stringify({ event: "database_pool_error", message: error.message })));
