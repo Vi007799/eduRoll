@@ -159,10 +159,9 @@
   window.addEventListener("resize", resize, { passive: true });
   window.addEventListener("wheel", event => {
     if (event.ctrlKey || event.metaKey) return;
-    const area = event.target.closest?.(".hero, .learning-view");
-    if (!area) return;
-    // Trackpad two-finger scroll pans the 3D camera. It does not capture pointer movement,
-    // so one-finger cursor movement and normal clicking remain unchanged.
+    if (event.target.closest?.(".modal-backdrop, input, textarea, select, [contenteditable='true']")) return;
+    // Two-finger trackpad scrolling pans the shared 3D world from anywhere on the page.
+    // Pointer motion is independent, so one-finger cursor movement and clicking stay native.
     targetX = Math.max(-13, Math.min(13, targetX - event.deltaX * 0.008));
     targetY = Math.max(-8, Math.min(8, targetY - event.deltaY * 0.008));
   }, { passive: true });
