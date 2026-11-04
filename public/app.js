@@ -202,19 +202,21 @@ function followupForm(journeyId, nodeId = null, dark = false) {
 }
 function nodePathLabel(path) { return path.map(n => n + 1).join("."); }
 function renderNode(node, path, journeyId) {
-  const article = create("article", "learning-node");
+  const isMajor = path.length === 1;
+  const article = create("article", `learning-node ${isMajor ? "major-step" : "concept-node"}`);
   article.dataset.nodeId = node.id;
   article.dataset.depth = node.depth || path.length;
   const heading = create("div", "node-heading");
-  const headingCopy = create("div");
-  const nodeKind = path.length === 1 ? "STEP" : path.length === 2 ? "SUBSTEP" : "BRANCH";
-  headingCopy.append(create("div", "node-index", `${nodeKind} ${nodePathLabel(path).padStart(2, "0")}`));
-  headingCopy.append(create("h3", "", node.title));
-  heading.append(headingCopy);
-  const elaborate = create("button", "elaborate-button", node.elaborated ? "Explore deeper ↗" : "Elaborate ↗");
-  elaborate.type = "button";
-  elaborate.dataset.elaborateNode = node.id;
-  heading.append(elaborate);
+  const copy = create("div", "node-heading-copy");
+  const label = isMajor ? `STEP ${String(path[0] + 1).padStart(2, "0")}` : `CONCEPT ${path.map(index => index + 1).join(".")}`;
+  copy.append(create("div", "node-index", label));
+  copy.append(create("h3", "node-title", node.title));
+  heading.append(copy);
+  const branch = create("button", "branch-button", node.elaborated ? "View branch ↗" : "Grow branch ↗");
+  branch.type = "button";
+  branch.dataset.branchNode = node.id;
+  branch.setAttribute("aria-label", `Grow a learning branch from ${node.title}`);
+  heading.append(branch);
   article.append(heading);
   if (node.summary) article.append(create("p", "node-summary", node.summary));
   if (node.content) article.append(create("p", "node-content", node.content));
@@ -225,13 +227,16 @@ function renderNode(node, path, journeyId) {
   }
   const children = Array.isArray(node.children) ? node.children : Array.isArray(node.keyPoints) ? node.keyPoints : [];
   if (children.length) {
-    const childContainer = create("div", "node-children");
+    const childContainer = create("div", "node-children concept-grid");
     children.forEach((child, index) => childContainer.append(renderNode(child, [...path, index], journeyId)));
     article.append(childContainer);
   }
-  const actions = create("div", "node-actions");
-  actions.append(followupForm(journeyId, node.id));
-  article.append(actions);
+  // A follow-up search belongs to the major step, never to its nested concepts.
+  if (isMajor) {
+    const actions = create("div", "node-actions");
+    actions.append(followupForm(journeyId, node.id));
+    article.append(actions);
+  }
   return article;
 }
 function normalizeJourney(journey) {
@@ -308,37 +313,37 @@ async function runFollowup(journeyId, query, contextNodeId) {
     showView("error");
   }
 }
-async function elaborateNode(button) {
-  const nodeId = button.dataset.elaborateNode;
+async function growBranch(button) {
+  const nodeId = button.dataset.branchNode;
   if (!state.journey || state.busyNodes.has(nodeId)) return;
   const article = button.closest(".learning-node");
-  const hasChildren = article.querySelector(":scope > .node-children");
-  if (hasChildren && hasChildren.children.length && findNode(state.journey.stages, nodeId)?.elaborated) {
-    hasChildren.scrollIntoView({ behavior: "smooth", block: "center" });
+  const node = findNode(state.journey.stages, nodeId);
+  const existing = article.querySelector(":scope > .generated-branch");
+  if (existing && node?.elaborated) {
+    existing.scrollIntoView({ behavior: "smooth", block: "center" });
     return;
   }
   state.busyNodes.add(nodeId);
   article.querySelectorAll(".branch-error").forEach(element => element.remove());
   button.disabled = true;
-  button.textContent = "Researching...";
-  const loading = create("div", "branch-loading", "Building a deeper learning branch...");
+  button.textContent = "Growing…";
+  const loading = create("div", "branch-loading", "Growing a new path from this concept…");
   article.append(loading);
-  const node = findNode(state.journey.stages, nodeId);
   try {
     const { nodes, sources } = await api(`/api/learning/${state.journey.id}/branches`, {
       method: "POST",
       body: JSON.stringify({ parentNodeId: nodeId, prompt: node?.elaborate_prompt || `Explain ${node?.title || "this topic"} in detail, step by step.` })
     });
     loading.remove();
-    const container = create("div", "node-children");
+    const container = create("div", "node-children concept-grid generated-branch");
     nodes.forEach((child, index) => container.append(renderNode(child, getNodePath(state.journey.stages, nodeId).concat(index), state.journey.id)));
     article.append(container);
     node.elaborated = true;
     node.children = [...(node.children || []), ...nodes];
     state.journey.sources = [...(state.journey.sources || []), ...(sources || [])];
     refreshSources(state.journey.sources);
-    button.textContent = "Explore deeper ↗";
-    setTimeout(() => container.scrollIntoView({ behavior: "smooth", block: "nearest" }), 80);
+    button.textContent = "View branch ↗";
+    setTimeout(() => container.scrollIntoView({ behavior: "smooth", block: "nearest" }), 120);
     updateScrollScene();
   } catch (error) {
     loading.textContent = error.message;
@@ -419,17 +424,7 @@ function scheduleProgressSave() {
   state.progressTimer = setTimeout(() => saveProgress().catch(error => console.warn("Progress save failed:", error.message)), 1200);
 }
 function updateScrollScene() {
-  const nodes = document.querySelectorAll(".learning-node");
-  const viewportCenter = window.innerHeight * 0.52;
-  nodes.forEach(node => {
-    const rect = node.getBoundingClientRect();
-    const distance = (rect.top + rect.height * 0.32 - viewportCenter) / Math.max(window.innerHeight, 1);
-    const tilt = Math.max(-9, Math.min(9, distance * -11));
-    const depth = Math.max(-72, Math.min(0, Math.abs(distance) * -48));
-    node.style.setProperty("--node-tilt", `${tilt.toFixed(2)}deg`);
-    node.style.setProperty("--node-depth", `${depth.toFixed(1)}px`);
-    node.style.setProperty("--node-lift", `${Math.max(-10, Math.min(10, distance * -8)).toFixed(1)}px`);
-  });
+  // Learning cards stay in normal document flow to keep headings and content aligned.
   if (state.journey) {
     const max = document.documentElement.scrollHeight - window.innerHeight;
     const percent = max > 0 ? Math.min(100, (window.scrollY / max) * 100) : 0;
@@ -479,7 +474,7 @@ $("#backHomeButton").addEventListener("click", () => { state.journey = null; sho
 $("#retryButton").addEventListener("click", () => state.retryAction ? state.retryAction() : showView("home"));
 $("#refreshHistoryButton").addEventListener("click", () => loadHistory().catch(error => showToast(error.message)));
 $("#endFollowupForm").addEventListener("submit", event => { event.preventDefault(); const query = new FormData(event.currentTarget).get("query").trim(); if (query && state.journey) runFollowup(state.journey.id, query, null); });
-$("#journeyBody").addEventListener("click", event => { const button = event.target.closest("[data-elaborate-node]"); if (button) elaborateNode(button); });
+$("#journeyBody").addEventListener("click", event => { const button = event.target.closest("[data-branch-node]"); if (button) growBranch(button); });
 window.addEventListener("scroll", onScroll, { passive: true });
 window.addEventListener("resize", () => requestAnimationFrame(updateScrollScene), { passive: true });
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") saveProgress(true).catch(() => {}); });
