@@ -82,9 +82,31 @@
       <div class="journey-end"><span class="end-spark">✳</span><h3>Curiosity doesn't have to stop here.</h3><p>Ask another question or follow a branch that caught your attention.</p><form class="followup-form" id="endFollowupForm"><input name="query" maxlength="180" placeholder="What are you curious about next?" required><button type="submit" aria-label="Explore follow-up">↗</button></form></div>
     </section>
 
-    <section class="loading-view" id="loadingView" hidden aria-live="polite">
-      <div class="loading-orbit"><span></span><span></span><span></span></div>
-      <h2>Following the thread...</h2><p>Researching the topic and shaping your next learning path.</p>
+    <section class="loading-view" id="loadingView" hidden aria-live="polite" aria-busy="true">
+      <div class="learning-space" aria-hidden="true">
+        <div class="space-grid"></div>
+        <svg class="space-paths" viewBox="0 0 720 390" preserveAspectRatio="xMidYMid meet">
+          <path class="space-path path-back" d="M90 235 C180 90 250 300 350 185 S520 65 635 170"/>
+          <path class="space-path path-front" d="M90 235 C180 90 250 300 350 185 S520 65 635 170"/>
+          <path class="space-branch" d="M350 185 C390 275 490 300 570 270"/>
+        </svg>
+        <div class="knowledge-node node-far"><span class="node-core"></span><i></i></div>
+        <div class="knowledge-node node-left"><span class="node-core"></span><i></i></div>
+        <div class="knowledge-node node-center"><span class="node-core"></span><i></i></div>
+        <div class="knowledge-node node-right"><span class="node-core"></span><i></i></div>
+        <div class="knowledge-node node-branch"><span class="node-core"></span><i></i></div>
+        <div class="space-depth depth-one">01 <span>FOUNDATION</span></div>
+        <div class="space-depth depth-two">02 <span>CONNECTION</span></div>
+        <div class="space-depth depth-three">03 <span>DISCOVERY</span></div>
+        <div class="space-cursor"></div>
+      </div>
+      <div class="loading-copy">
+        <div class="eyebrow"><span class="eyebrow-pulse"></span> MAPPING YOUR KNOWLEDGE SPACE</div>
+        <h2>Following the thread<span class="loading-ellipsis">...</span></h2>
+        <p>Connecting the first idea to the layers waiting beyond it.</p>
+        <div class="loading-progress" aria-hidden="true"><span></span></div>
+        <span class="loading-caption">A new learning path is taking shape</span>
+      </div>
     </section>
     <section class="error-view" id="errorView" hidden role="alert">
       <div class="error-mark">!</div><h2>We hit a pause.</h2><p id="errorMessage">We couldn't complete that request.</p><button class="button button-primary" id="retryButton" type="button">Try again</button>
