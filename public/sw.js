@@ -1,5 +1,5 @@
 "use strict";
-const CACHE = "eduroll-shell-v4";
+const CACHE = "eduroll-shell-v5";
 const SHELL = ["/", "/styles.css", "/app.js", "/scene3d.js", "/favicon.svg", "/manifest.webmanifest"];
 self.addEventListener("install", event => event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL))));
 self.addEventListener("activate", event => event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key !== CACHE).map(key => caches.delete(key))))));
