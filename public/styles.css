@@ -227,3 +227,72 @@ header,main,footer{position:relative;z-index:2}
   .knowledge-node,.path-front,.space-branch,.space-cursor,.loading-progress span,.loading-ellipsis{animation:none!important}
   .loading-progress span{width:65%;transform:none}
 }
+
+
+/* eduRoll learning journey: a clean hierarchy with reliable, non-overlapping flow. */
+.learning-view{perspective:none!important;transform:none!important}
+.journey-body{display:grid;gap:22px;position:relative;transform:none!important;transform-style:flat!important}
+.intro-block{margin:0 0 7px;transform:none!important;transform-style:flat!important}
+.learning-node,.learning-node *{transform:none!important;transform-style:flat!important;backface-visibility:visible!important}
+.learning-node{min-width:0;margin:0 0 0 22px;padding:25px 28px;border-radius:17px;overflow:visible;will-change:auto!important;transition:border-color .2s,box-shadow .2s}
+.learning-node:before{left:-23px;top:31px;bottom:-25px;opacity:.55}
+.learning-node:after{left:-28px;top:31px}
+.node-heading{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:16px}
+.node-heading-copy{min-width:0}
+.node-index{display:block;position:static;margin:0 0 9px;font-size:9px;line-height:1.4;letter-spacing:.17em;color:#9db8ff}
+.node-heading h3,.node-title{display:block;position:static;margin:0;color:#f3f6ff;font-size:clamp(20px,2.3vw,26px);line-height:1.28;letter-spacing:-.035em;overflow-wrap:anywhere}
+.major-step{background:linear-gradient(145deg,rgba(18,37,69,.98),rgba(10,23,45,.98));border:1px solid rgba(151,180,239,.24);box-shadow:0 18px 44px rgba(0,0,0,.2)}
+.major-step .node-content{max-width:850px}
+.node-summary{margin:13px 0 12px;color:#bdcbe2;font-size:13px;line-height:1.75}
+.node-content{margin:0 0 15px;color:#d3def0;font-size:14px;line-height:1.85;overflow-wrap:anywhere}
+.node-examples{margin-top:16px}
+.example-block{background:rgba(4,15,32,.55);border-color:rgba(157,182,232,.17);color:#d8e4fa}
+.concept-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:20px 0 0;padding:0;border:0;transform:none!important}
+.concept-node{min-width:0;margin:0;padding:18px 19px;background:rgba(35,57,94,.7);border:1px solid rgba(151,180,239,.18);border-radius:13px;box-shadow:none}
+.concept-node:before,.concept-node:after{display:none}
+.concept-node .node-index{font-size:8px;color:#9bb3eb;letter-spacing:.14em}
+.concept-node .node-title{font-size:16px;line-height:1.38}
+.concept-node .node-summary{font-size:11px;margin:8px 0 0}
+.concept-node .node-content{font-size:12px;line-height:1.75}
+.branch-button{flex:none;display:inline-flex;align-items:center;justify-content:center;min-height:37px;padding:0 13px;border:1px solid rgba(151,180,239,.3);border-radius:9px;background:rgba(113,145,224,.13);color:#c6d7ff;font:700 10px var(--sans);cursor:pointer;transition:background .2s,border-color .2s,transform .2s}
+.branch-button:hover{background:rgba(113,145,224,.24);border-color:#8daeff;transform:translateY(-1px)}
+.branch-button:disabled{opacity:.65;cursor:wait;transform:none}
+.node-actions{display:block;border:0;padding:0;margin:21px 0 0}
+.node-actions .node-followup{width:100%;max-width:100%;min-height:49px;padding:6px 7px 6px 15px;background:#07152b;border:1px solid rgba(159,185,236,.36);border-radius:11px;box-shadow:inset 0 1px 0 rgba(255,255,255,.035)}
+.node-actions .node-followup:focus-within{border-color:#91b0ff;box-shadow:0 0 0 3px rgba(117,155,255,.16)}
+.node-actions .node-followup input{min-width:0;color:#f4f7ff!important;-webkit-text-fill-color:#f4f7ff;font-size:13px}
+.node-actions .node-followup input::placeholder{color:#a5b6d4!important;opacity:1}
+.node-actions .node-followup button{width:36px;height:36px;flex:none;background:#9db8ff;color:#0b1b36;font-weight:800}
+.generated-branch{position:relative;animation:eduroll-branch-reveal .75s cubic-bezier(.2,.8,.2,1) both}
+.generated-branch:before{content:"";position:absolute;left:50%;top:-18px;width:2px;height:18px;background:linear-gradient(transparent,#8faeff);transform-origin:top;animation:eduroll-branch-stem .45s ease-out both}
+.branch-loading{margin:18px 0 0;padding:14px 16px;border:1px dashed rgba(145,176,255,.45);border-radius:11px;background:rgba(73,105,173,.12);color:#c4d6fa;font-size:12px}
+.branch-error{color:#ffabb6}
+@keyframes eduroll-branch-reveal{from{opacity:0;clip-path:inset(0 0 100% 0);filter:blur(5px)}to{opacity:1;clip-path:inset(0 0 0 0);filter:blur(0)}}
+@keyframes eduroll-branch-stem{from{transform:scaleY(0);opacity:0}to{transform:scaleY(1);opacity:1}}
+@media(max-width:650px){
+ .learning-view{padding:38px 16px 65px}
+ .learning-topline{display:grid;grid-template-columns:1fr;align-items:start}
+ .journey-nav-actions{justify-content:flex-start}
+ .learning-node{margin-left:18px;padding:21px 17px}
+ .node-heading{grid-template-columns:minmax(0,1fr);gap:12px}
+ .branch-button{justify-self:start}
+ .concept-grid{grid-template-columns:1fr;gap:10px}
+ .node-actions .node-followup{max-width:none}
+}
+@media(prefers-reduced-motion:reduce){.generated-branch,.generated-branch:before{animation:none!important}}
+
+/* Draw the tree trunk first; its branches follow in sequence. */
+.tree-formation{overflow:visible}
+.tree-path{fill:none;stroke-width:3.2;stroke-dasharray:520;stroke-dashoffset:520}
+.tree-trunk{stroke-width:5;animation:eduroll-tree-draw 1.35s cubic-bezier(.35,.75,.3,1) .12s forwards}
+.tree-branch{stroke-width:3;animation:eduroll-tree-draw 1.05s cubic-bezier(.35,.75,.3,1) forwards}
+.tree-branch.branch-a{animation-delay:1.32s}
+.tree-branch.branch-b{animation-delay:1.52s}
+.tree-branch.branch-c{animation-delay:1.72s}
+.tree-branch.branch-d{animation-delay:1.92s}
+.tree-node{fill:#c6d8ff;stroke:#75a9ff;stroke-width:2;filter:drop-shadow(0 0 10px rgba(117,169,255,.9));opacity:0;transform-box:fill-box;transform-origin:center;animation:eduroll-tree-pop .45s ease-out forwards}
+.tree-node.trunk-node{animation-delay:1.35s}
+.tree-node.node-a{animation-delay:2.28s}.tree-node.node-b{animation-delay:2.45s}.tree-node.node-c{animation-delay:2.62s}.tree-node.node-d{animation-delay:2.8s}
+@keyframes eduroll-tree-draw{to{stroke-dashoffset:0}}
+@keyframes eduroll-tree-pop{from{opacity:0;scale:.2}to{opacity:1;scale:1}}
+@media(prefers-reduced-motion:reduce){.tree-path{stroke-dashoffset:0;animation:none!important}.tree-node{opacity:1;animation:none!important}}
