@@ -10,7 +10,7 @@ eduRoll is a progressive learning platform. A search begins with a simple explan
 - Native browser scrolling with a restrained 3D perspective response tied to scroll position. The app does not intercept `wheel`, `pointermove`, or touchpad gestures. On a laptop, the browser/OS handles two-finger touchpad scrolling; ordinary pointer movement does not move the 3D scene. Reduced-motion preferences disable the 3D transforms.
 - Account registration, email verification, sign-in, sign-out, password reset, secure server-side sessions, CSRF tokens, and password hashing with Argon2id.
 - PostgreSQL persistence for accounts, email tokens, learning journeys, recursive learning nodes, source references, consent records and progress.
-- Learning generation through the OpenAI Responses API, built-in web search, strict Structured Outputs, and input/output moderation.
+- Learning generation through Groq's OpenAI-compatible Chat Completions API, GPT-OSS 20B structured outputs, and optional built-in browser research for time-sensitive queries.
 - Query-aware learning structures (concepts, tutorials, comparisons, timelines and general topics).
 - Recursive Elaborate actions, contextual follow-up search at every node, learning history, resume progress, and account data export/deletion.
 - Server-side secrets, Helmet security headers/CSP, request validation, per-route rate limits, body limits, generic upstream errors, and no API response caching.
@@ -43,7 +43,7 @@ Official provider references:
 
 - Node.js 20 or newer
 - PostgreSQL 14 or newer
-- An OpenAI API key with access to the configured model and Responses API web search; ZDR confirmation is required before generation can be enabled
+- A Groq API key (free tier available; subject to published rate and token limits)
 - SMTP credentials for production email verification and password recovery
 
 ## Local setup
@@ -54,7 +54,7 @@ Official provider references:
    docker compose up -d db
    ```
 
-2. Copy `.env.example` to `.env` and set `DATABASE_URL`, `SESSION_SECRET`, `OPENAI_API_KEY`, and local SMTP settings. Keep `OPENAI_ZERO_DATA_RETENTION_CONFIRMED=false` until ZDR is confirmed by OpenAI. For local development, SMTP can be left blank; verification/reset links are logged to the server console.
+2. Copy `.env.example` to `.env` and set `DATABASE_URL`, `SESSION_SECRET`, `GROQ_API_KEY`, and local SMTP settings. For local development, SMTP can be left blank; verification/reset links are logged to the server console.
 3. Install dependencies and start:
 
    ```bash
@@ -94,7 +94,7 @@ The server applies the idempotent SQL schema at startup. `npm run db:migrate` ca
 
 ## Production deployment checklist
 
-- Confirm OpenAI ZDR status for the intended under-13/applicable digital-consent-age data flow before enabling generation; complete the under-18 safeguards and legal review above.
+- Review Groq's current free-tier limits, acceptable-use terms, data handling, and the safety/privacy limitations above before enabling production traffic.
 - Use a managed PostgreSQL service with TLS, automated backups, restore testing, monitoring and a documented retention policy.
 - Set a unique `SESSION_SECRET`, `APP_ORIGIN` to the canonical HTTPS origin, `NODE_ENV=production`, correct `TRUST_PROXY`, `PGSSL=true` where required, and all provider/SMTP secrets in the hosting secret manager.
 - Configure transactional email SPF, DKIM and DMARC; test delivery, bounce and abuse handling.
@@ -110,7 +110,7 @@ The server applies the idempotent SQL schema at startup. `npm run db:migrate` ca
 
 - `server.js` — Express app, authentication/session routes, ownership checks, learning APIs, progress and account data rights.
 - `lib/auth.js` — Argon2id password hashing helpers, email token delivery and session helpers.
-- `lib/learning.js` — query-aware learning prompt, OpenAI Responses API adapter, web-search citation extraction, moderation and structured-output validation.
+- `lib/learning.js` — query-aware learning prompt, Groq API adapter, optional browser research, source URL extraction and structured-output validation.
 - `db/schema.sql` — PostgreSQL schema.
 - `public/app.js` — client-side UI, recursive learning tree, contextual search, progress saving and scroll-linked 3D transforms.
 - `public/styles.css` — original eduRoll visual system and reduced-motion behavior.
@@ -121,7 +121,7 @@ The browser's native scroll handling is deliberately preserved. No wheel or poin
 
 ## Known limitations to close before launch
 
-- OpenAI ZDR enrollment is not verified by this repository; generation intentionally fails closed until the operator confirms it. Claim-level citations, child-safety escalation workflows and legal review remain outstanding.
+- Groq free-tier limits can change and are not guaranteed production capacity. Dedicated input/output moderation, claim-level citations, child-safety escalation workflows and legal review remain outstanding.
 - Citation metadata is currently displayed as a source list, not attached to each individual factual claim.
 - The Terms and Privacy pages are launch drafts, not approved legal documents.
 - No production OAuth/social login, MFA, support console, moderation dashboard, subscription/billing, organization accounts, localization or formal analytics pipeline yet.
