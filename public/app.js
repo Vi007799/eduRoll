@@ -251,7 +251,7 @@ function renderJourney(journey, options = {}) {
   const intro = create("section", "intro-block");
   intro.append(create("div", "intro-label", "THE SIMPLEST EXPLANATION"));
   intro.append(create("p", "", journey.introduction));
-  intro.append(followupForm(journey.id, null, true));
+  
   body.append(intro);
   (journey.stages || []).forEach((node, index) => body.append(renderNode(node, [index], journey.id)));
   const sourcesSection = $("#sourcesSection");
