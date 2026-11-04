@@ -101,3 +101,54 @@ header,main,footer{position:relative;z-index:2}
  .topbar{height:68px;padding:0 20px}
 }
 @media(prefers-reduced-motion:reduce){.hero-copy{transform:none!important}.world-canvas{opacity:.55}}
+
+
+/* Contrast corrections for the dark eduRoll theme. */
+.account-menu{
+  background:#101e38;
+  border-color:rgba(165,190,239,.25);
+  box-shadow:0 22px 60px rgba(0,0,0,.42);
+  color:#edf3ff;
+}
+.account-menu-user{color:#f2f6ff;border-bottom-color:rgba(165,190,239,.2)}
+.account-menu button{color:#c0cde4}
+.account-menu button:hover{background:rgba(255,255,255,.09);color:#fff}
+.account-menu .danger-action{color:#ff9ba7!important}
+.auth-dialog{
+  background:#101e38;
+  border-color:rgba(165,190,239,.24);
+  color:#eef4ff;
+  box-shadow:0 30px 100px rgba(0,0,0,.58);
+}
+.auth-dialog h2{color:#f4f7ff}
+.auth-description{color:#b7c6df}
+.auth-dialog .eyebrow{color:#9db8ff}
+.auth-tabs{background:#0a162b}
+.auth-tabs button{color:#aebed8}
+.auth-tabs button.active{background:#20365b;color:#fff;box-shadow:0 2px 12px rgba(0,0,0,.25)}
+.auth-form label{color:#dce7fa}
+.auth-form input:not([type=checkbox]){
+  background:#09162b;
+  border-color:rgba(166,190,235,.27);
+  color:#f4f7ff;
+  caret-color:#a9c0ff;
+}
+.auth-form input:not([type=checkbox])::placeholder{color:#91a4c3}
+.auth-form input[type=password]{color:#fff;-webkit-text-fill-color:#fff}
+.auth-form input:focus{border-color:#91adff;box-shadow:0 0 0 3px rgba(145,173,255,.18)}
+.auth-form .field-hint{color:#a7b8d4}
+.auth-tabs button:focus-visible,.text-button:focus-visible{outline-color:#a7bcff}
+.text-button{color:#a9c1ff}
+.text-button:hover{color:#fff}
+.consent-label{color:#dce7fa!important}
+.consent-label a{color:#a9c1ff}
+.auth-feedback{color:#8ce0c6}
+.auth-feedback.error{color:#ff9ca8}
+.auth-footnote{color:#9fb0cc}
+.modal-close{background:#203453;color:#dce8ff}
+.modal-close:hover{background:#2a4269;color:#fff}
+.auth-brand-mark{background:#29436f}
+@media(max-width:650px){
+  .account-menu{right:0;max-width:min(88vw,320px)}
+  .auth-dialog{background:#101e38}
+}
