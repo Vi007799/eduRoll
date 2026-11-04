@@ -319,8 +319,9 @@ async function growBranch(button) {
   const article = button.closest(".learning-node");
   const node = findNode(state.journey.stages, nodeId);
   const existing = article.querySelector(":scope > .generated-branch");
-  if (existing && node?.elaborated) {
-    existing.scrollIntoView({ behavior: "smooth", block: "center" });
+  const initialChildren = article.querySelector(":scope > .node-children");
+  if ((existing || initialChildren?.children.length) && node?.elaborated) {
+    (existing || initialChildren).scrollIntoView({ behavior: "smooth", block: "center" });
     return;
   }
   state.busyNodes.add(nodeId);
