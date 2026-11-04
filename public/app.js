@@ -59,12 +59,10 @@ function updateAccountUI() {
   $("#authOpenButton").hidden = signedIn;
   $("#accountButton").hidden = !signedIn;
   $("#accountStatus").hidden = !signedIn;
-  $("#accountStatus").textContent = signedIn ? `Learning as ${state.user.displayName}` : "";
+  $("#accountStatus").textContent = signedIn ? `Rolling as ${state.user.displayName}` : "";
   $("#accountButton").textContent = signedIn ? (state.user.displayName || "e").trim().charAt(0).toUpperCase() : "";
   $("#accountMenuUser").textContent = signedIn ? `${state.user.displayName} · ${state.user.email}` : "";
   $("#myLearningNav").hidden = !signedIn;
-  $("#my-learning").hidden = !signedIn;
-  if (signedIn) loadHistory().catch(() => {});
 }
 function setAuthMode(mode) {
   state.authMode = mode;
@@ -98,6 +96,10 @@ async function initialize() {
       state.resetToken = params.get("reset");
       openAuth("resetComplete");
       history.replaceState({}, "", location.pathname);
+    } else if (params.has("journey")) {
+      const journeyId = params.get("journey");
+      history.replaceState({}, "", location.pathname);
+      await openJourney(journeyId);
     }
   } catch (error) { console.error("Initialization failed:", error.message); }
 }
@@ -201,6 +203,22 @@ function followupForm(journeyId, nodeId = null, dark = false) {
   return form;
 }
 function nodePathLabel(path) { return path.map(n => n + 1).join("."); }
+function makeBranchToggle(container, count) {
+  const control = create("div", "branch-control");
+  const toggle = create("button", "branch-toggle", `Hide branch · ${count} ${count === 1 ? "node" : "nodes"}`);
+  toggle.type = "button";
+  toggle.setAttribute("aria-expanded", "true");
+  toggle.addEventListener("click", () => {
+    const willShow = container.hidden;
+    container.hidden = !willShow;
+    toggle.setAttribute("aria-expanded", String(willShow));
+    toggle.textContent = willShow
+      ? `Hide branch · ${count} ${count === 1 ? "node" : "nodes"}`
+      : `Show branch · ${count} ${count === 1 ? "node" : "nodes"}`;
+  });
+  control.append(toggle);
+  return control;
+}
 function renderNode(node, path, journeyId) {
   const isMajor = path.length === 1;
   const article = create("article", `learning-node tree-node ${isMajor ? "major-step" : "concept-node"}`);
@@ -212,11 +230,6 @@ function renderNode(node, path, journeyId) {
   copy.append(create("div", "node-index", label));
   copy.append(create("h3", "node-title", node.title));
   heading.append(copy);
-  const branch = create("button", "branch-button", node.elaborated ? "View branch ↗" : "Grow branch ↗");
-  branch.type = "button";
-  branch.dataset.branchNode = node.id;
-  branch.setAttribute("aria-label", `Grow a learning branch from ${node.title}`);
-  heading.append(branch);
   article.append(heading);
   if (node.summary) article.append(create("p", "node-summary", node.summary));
   if (node.content) article.append(create("p", "node-content", node.content));
@@ -230,8 +243,17 @@ function renderNode(node, path, journeyId) {
     const childContainer = create("div", "node-children tree-branches");
     children.forEach((child, index) => childContainer.append(renderNode(child, [...path, index], journeyId)));
     article.append(childContainer);
+    article.append(makeBranchToggle(childContainer, children.length));
+  } else {
+    const grow = create("button", "branch-button branch-grow-button", "Grow branch ↗");
+    grow.type = "button";
+    grow.dataset.branchNode = node.id;
+    grow.setAttribute("aria-label", `Grow a learning branch from ${node.title}`);
+    const control = create("div", "branch-control");
+    control.append(grow);
+    article.append(control);
   }
-  // A follow-up search belongs to the major step, never to its nested concepts.
+  // A contextual follow-up search belongs to each major step only.
   if (isMajor) {
     const actions = create("div", "node-actions");
     actions.append(followupForm(journeyId, node.id));
@@ -292,7 +314,6 @@ async function runSearch(query) {
   try {
     const { journey } = await api("/api/learning/search", { method: "POST", body: JSON.stringify({ query }) });
     renderJourney(journey);
-    loadHistory().catch(() => {});
   } catch (error) {
     $("#errorMessage").textContent = error.message;
     showView("error");
@@ -309,7 +330,6 @@ async function runFollowup(journeyId, query, contextNodeId) {
   try {
     const { journey } = await api(`/api/learning/${journeyId}/follow-up`, { method: "POST", body: JSON.stringify(contextNodeId ? { query, contextNodeId } : { query }) });
     renderJourney(journey);
-    loadHistory().catch(() => {});
   } catch (error) {
     $("#errorMessage").textContent = error.message;
     showView("error");
@@ -343,9 +363,11 @@ async function growBranch(button) {
     article.append(container);
     node.elaborated = true;
     node.children = [...(node.children || []), ...nodes];
+    const control = create("div", "branch-control");
+    control.append(makeBranchToggle(container, nodes.length));
+    button.closest(".branch-control")?.replaceWith(control);
     state.journey.sources = [...(state.journey.sources || []), ...(sources || [])];
     refreshSources(state.journey.sources);
-    button.textContent = "View branch ↗";
     setTimeout(() => container.scrollIntoView({ behavior: "smooth", block: "nearest" }), 120);
     updateScrollScene();
   } catch (error) {
@@ -381,26 +403,7 @@ function refreshSources(sources) {
   $("#sourcesSection").hidden = !grid.children.length;
 }
 
-async function loadHistory() {
-  if (!state.user) return;
-  const { journeys } = await api("/api/learning/history");
-  const grid = $("#historyGrid");
-  grid.replaceChildren();
-  journeys.forEach(journey => {
-    const card = create("button", "history-card");
-    card.type = "button";
-    card.append(create("h3", "", journey.title || journey.query));
-    card.append(create("p", "", `${journey.intent} · ${new Date(journey.last_opened_at).toLocaleDateString()}`));
-    const meter = create("div", "history-meter");
-    const fill = create("span");
-    fill.style.width = `${Math.round(Number(journey.progress_ratio || 0) * 100)}%`;
-    meter.append(fill);
-    card.append(meter);
-    card.addEventListener("click", () => openJourney(journey.id));
-    grid.append(card);
-  });
-  if (!journeys.length) grid.append(create("p", "journey-context", "Your saved learning journeys will appear here."));
-}
+
 async function openJourney(id) {
   showView("loading");
   try {
@@ -475,7 +478,7 @@ $("#deleteAccountButton").addEventListener("click", async () => {
 });
 $("#backHomeButton").addEventListener("click", () => { state.journey = null; showView("home"); window.scrollTo({ top: 0, behavior: "smooth" }); input.focus({ preventScroll: true }); });
 $("#retryButton").addEventListener("click", () => state.retryAction ? state.retryAction() : showView("home"));
-$("#refreshHistoryButton").addEventListener("click", () => loadHistory().catch(error => showToast(error.message)));
+
 
 $("#journeyBody").addEventListener("click", event => { const button = event.target.closest("[data-branch-node]"); if (button) growBranch(button); });
 window.addEventListener("scroll", onScroll, { passive: true });
