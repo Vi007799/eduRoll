@@ -203,7 +203,7 @@ function followupForm(journeyId, nodeId = null, dark = false) {
 function nodePathLabel(path) { return path.map(n => n + 1).join("."); }
 function renderNode(node, path, journeyId) {
   const isMajor = path.length === 1;
-  const article = create("article", `learning-node ${isMajor ? "major-step" : "concept-node"}`);
+  const article = create("article", `learning-node tree-node ${isMajor ? "major-step" : "concept-node"}`);
   article.dataset.nodeId = node.id;
   article.dataset.depth = node.depth || path.length;
   const heading = create("div", "node-heading");
@@ -227,7 +227,7 @@ function renderNode(node, path, journeyId) {
   }
   const children = Array.isArray(node.children) ? node.children : Array.isArray(node.keyPoints) ? node.keyPoints : [];
   if (children.length) {
-    const childContainer = create("div", "node-children concept-grid");
+    const childContainer = create("div", "node-children tree-branches");
     children.forEach((child, index) => childContainer.append(renderNode(child, [...path, index], journeyId)));
     article.append(childContainer);
   }
@@ -258,7 +258,9 @@ function renderJourney(journey, options = {}) {
   intro.append(create("p", "", journey.introduction));
   
   body.append(intro);
-  (journey.stages || []).forEach((node, index) => body.append(renderNode(node, [index], journey.id)));
+  const tree = create("div", "major-branches");
+  (journey.stages || []).forEach((node, index) => tree.append(renderNode(node, [index], journey.id)));
+  body.append(tree);
   const sourcesSection = $("#sourcesSection");
   const sourcesGrid = $("#sourcesGrid");
   sourcesGrid.replaceChildren();
@@ -336,7 +338,7 @@ async function growBranch(button) {
       body: JSON.stringify({ parentNodeId: nodeId, prompt: node?.elaborate_prompt || `Explain ${node?.title || "this topic"} in detail, step by step.` })
     });
     loading.remove();
-    const container = create("div", "node-children concept-grid generated-branch");
+    const container = create("div", "node-children tree-branches generated-branch");
     nodes.forEach((child, index) => container.append(renderNode(child, getNodePath(state.journey.stages, nodeId).concat(index), state.journey.id)));
     article.append(container);
     node.elaborated = true;
