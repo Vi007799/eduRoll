@@ -86,22 +86,37 @@ function openAuth(mode = "login") {
 function closeAuth() { authModal.hidden = true; }
 
 async function initialize() {
+  const params = new URLSearchParams(location.search);
+  // Restore the account UI independently so a transient CSRF/session bootstrap
+  // failure cannot prevent a saved myRoll link from being opened.
   try {
     await refreshCsrf();
+  } catch (error) {
+    console.error("Security session initialization failed:", error.message);
+  }
+  try {
     const { user } = await api("/api/auth/me");
     state.user = user;
     updateAccountUI();
-    const params = new URLSearchParams(location.search);
-    if (params.has("reset")) {
-      state.resetToken = params.get("reset");
-      openAuth("resetComplete");
-      history.replaceState({}, "", location.pathname);
-    } else if (params.has("journey")) {
-      const journeyId = params.get("journey");
-      history.replaceState({}, "", location.pathname);
-      await openJourney(journeyId);
+  } catch (error) {
+    state.user = null;
+    updateAccountUI();
+    console.error("Account initialization failed:", error.message);
+  }
+  if (params.has("reset")) {
+    state.resetToken = params.get("reset");
+    openAuth("resetComplete");
+    history.replaceState({}, "", location.pathname);
+  } else if (params.has("journey")) {
+    const journeyId = params.get("journey");
+    history.replaceState({}, "", location.pathname);
+    if (!/^[0-9a-f-]{36}$/i.test(journeyId)) {
+      $( "#errorMessage" ).textContent = "This saved learning path link is invalid. Open myRoll and select the journey again.";
+      showView("error");
+      return;
     }
-  } catch (error) { console.error("Initialization failed:", error.message); }
+    await openJourney(journeyId);
+  }
 }
 
 async function handleLogin(event) {
