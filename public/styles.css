@@ -296,3 +296,63 @@ header,main,footer{position:relative;z-index:2}
 @keyframes eduroll-tree-draw{to{stroke-dashoffset:0}}
 @keyframes eduroll-tree-pop{from{opacity:0;scale:.2}to{opacity:1;scale:1}}
 @media(prefers-reduced-motion:reduce){.tree-path{stroke-dashoffset:0;animation:none!important}.tree-node{opacity:1;animation:none!important}}
+
+
+/* Knowledge tree layout: connected parent-child branches rather than a card grid. */
+.journey-body{display:block!important;position:relative}
+.intro-block{position:relative;margin:0 auto 48px!important;max-width:760px;z-index:2}
+.intro-block:before{content:"";position:absolute;left:50%;top:100%;height:49px;width:2px;background:linear-gradient(#7d98df,#9fb2e8);transform:translateX(-50%)}
+.major-branches{position:relative;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:35px 28px;align-items:start;padding-top:30px}
+.major-branches:before{content:"";position:absolute;left:10%;right:10%;top:0;height:2px;background:linear-gradient(90deg,transparent,#9cafe0 12%,#9cafe0 88%,transparent);opacity:.9}
+.major-branches>.tree-node{position:relative;margin:0!important;min-width:0}
+.major-branches>.tree-node:before{content:"";position:absolute;left:50%;top:-31px;height:31px;width:2px;background:#9cafe0;bottom:auto;transform:none}
+.major-branches>.tree-node:after{content:"";position:absolute;left:calc(50% - 5px);top:-37px;width:10px;height:10px;border:2px solid #f5f7fb;border-radius:50%;background:#5679d8;box-shadow:0 0 0 3px #dfe6f6}
+.major-branches>.tree-node:nth-child(1):before{background:linear-gradient(#9cafe0,#6f91e7)}
+.tree-node{overflow:visible!important}
+.tree-node .node-heading{align-items:center}
+.tree-node.major-step{border-radius:18px;background:linear-gradient(150deg,#102744,#182f52);border:1px solid rgba(136,170,234,.38);box-shadow:0 18px 42px rgba(21,42,77,.17);padding:24px 23px}
+.tree-node.major-step>.node-heading .node-title{font-size:clamp(18px,2vw,23px)}
+.tree-node.major-step>.node-index,.tree-node.major-step .node-index{color:#a9c2ff}
+.tree-node.major-step>.node-content,.tree-node.major-step>.node-summary{color:#d0def4}
+.tree-node .node-actions{border:0;padding:0;margin-top:19px}
+.tree-node .node-followup{max-width:none;width:100%;background:#07182d;border-color:#5977aa;min-height:47px}
+.tree-node .node-followup input{color:#f5f8ff!important;-webkit-text-fill-color:#f5f8ff}
+.tree-node .node-followup input::placeholder{color:#a9bad7!important;opacity:1}
+.tree-branches{position:relative;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:18px 16px;margin:0!important;padding:33px 0 0!important;border:0!important}
+.tree-branches:before{content:"";position:absolute;left:50%;top:0;height:19px;width:2px;background:#8da7df;transform:translateX(-50%)}
+.tree-branches:after{content:"";position:absolute;left:12%;right:12%;top:18px;height:2px;background:linear-gradient(90deg,transparent,#8da7df 12%,#8da7df 88%,transparent)}
+.tree-branches>.tree-node{position:relative;min-width:0;margin:0!important;padding:17px 17px 16px!important;border-radius:13px;background:linear-gradient(150deg,#1a3559,#142a49)!important;border:1px solid rgba(132,164,222,.27)!important;box-shadow:0 10px 24px rgba(0,0,0,.12)!important}
+.tree-branches>.tree-node:before{content:"";position:absolute;left:50%;top:-15px;bottom:auto;width:2px;height:15px;background:#8da7df;transform:none}
+.tree-branches>.tree-node:after{left:calc(50% - 4px)!important;top:-20px!important;width:8px!important;height:8px!important;background:#9db9ff!important;border:1px solid #1b355a!important;box-shadow:0 0 0 2px rgba(141,167,223,.2)!important}
+.tree-branches .node-heading{display:block}
+.tree-branches .node-title{font-size:16px!important;line-height:1.35}
+.tree-branches .node-index{font-size:8px;margin-bottom:7px}
+.tree-branches .node-summary{font-size:11px;color:#b8c9e4!important;margin:8px 0 0}
+.tree-branches .node-content{font-size:12px;color:#d2def1!important;line-height:1.7}
+.tree-branches .branch-button{margin-top:12px}
+.tree-branches .tree-branches{grid-column:1/-1;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));margin:7px 0 0!important;padding:26px 0 0!important}
+.tree-branches .tree-branches:before{height:13px}
+.tree-branches .tree-branches:after{top:12px}
+.tree-branches .tree-branches>.tree-node{background:linear-gradient(145deg,#213e65,#1b3355)!important}
+.tree-node .example-block{background:rgba(4,15,32,.5);color:#dce7fb;border-color:rgba(154,181,230,.18)}
+.tree-node .branch-button{background:rgba(132,164,231,.13);border-color:rgba(154,181,230,.36);color:#d2e0ff}
+.tree-node .branch-button:hover{background:rgba(132,164,231,.25)}
+.generated-branch{animation:eduroll-branch-reveal .8s cubic-bezier(.2,.8,.2,1) both}
+.generated-branch:before{content:"";position:absolute;left:50%;top:0;width:2px;height:19px;background:linear-gradient(transparent,#8da7df);transform-origin:top;animation:eduroll-branch-stem .45s ease-out both}
+@media(max-width:700px){
+ .intro-block{margin-bottom:38px!important}
+ .major-branches{grid-template-columns:minmax(0,1fr);gap:28px;padding-top:24px}
+ .major-branches:before{left:50%;right:auto;width:2px;height:100%;background:linear-gradient(#9cafe0,#9cafe0 90%,transparent)}
+ .major-branches>.tree-node{margin-left:22px!important}
+ .major-branches>.tree-node:before{left:-23px;top:30px;width:23px;height:2px}
+ .major-branches>.tree-node:after{left:-29px;top:25px}
+ .tree-branches{grid-template-columns:minmax(0,1fr);gap:13px;padding:25px 0 0 15px!important}
+ .tree-branches:before{left:15px;top:0;height:100%;width:2px;background:#8da7df;transform:none}
+ .tree-branches:after{display:none}
+ .tree-branches>.tree-node{margin-left:16px!important}
+ .tree-branches>.tree-node:before{left:-17px;top:25px;width:17px;height:2px}
+ .tree-branches>.tree-node:after{left:-22px!important;top:21px!important}
+ .tree-branches .tree-branches{grid-column:auto;grid-template-columns:minmax(0,1fr);margin:10px 0 0!important;padding:18px 0 0 12px!important}
+ .tree-branches .tree-branches:before{left:12px}
+}
+@media(prefers-reduced-motion:reduce){.generated-branch,.generated-branch:before{animation:none!important}}
