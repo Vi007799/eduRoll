@@ -1,6 +1,6 @@
 "use strict";
 const CACHE = "eduroll-shell-v8";
-const SHELL = ["/", "/styles.css", "/app.js", "/scene3d.js", "/favicon.svg", "/manifest.webmanifest"];
+const SHELL = ["/", "/styles.css", "/app.js", "/scene3d.js", "/favicon.svg", "/manifest.webmanifest", "/myroll.html", "/myroll.css", "/myroll.js"];
 self.addEventListener("install", event => event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL))));
 self.addEventListener("activate", event => event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key !== CACHE).map(key => caches.delete(key))))));
 self.addEventListener("fetch", event => {
@@ -11,7 +11,7 @@ self.addEventListener("fetch", event => {
     return;
   }
   event.respondWith(caches.match(event.request).then(cached => cached || fetch(event.request).then(response => {
-    if (response.ok && ["/styles.css", "/app.js", "/scene3d.js", "/favicon.svg", "/manifest.webmanifest"].includes(url.pathname)) {
+    if (response.ok && ["/styles.css", "/app.js", "/scene3d.js", "/favicon.svg", "/manifest.webmanifest", "/myroll.css", "/myroll.js"].includes(url.pathname)) {
       const copy = response.clone(); caches.open(CACHE).then(cache => cache.put(event.request, copy));
     }
     return response;
