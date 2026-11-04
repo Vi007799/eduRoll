@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#050c1c">
+  <meta name="description" content="Your saved eduRoll learning journeys.">
+  <meta name="color-scheme" content="dark">
+  <title>myRoll — Your learning paths | eduRoll</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css?v=3d-world-3">
+  <link rel="stylesheet" href="/myroll.css">
+  <script src="/myroll.js" defer></script>
+</head>
+<body>
+  <div class="site-noise" aria-hidden="true"></div>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="eduRoll home"><span class="brand-symbol" aria-hidden="true"><span></span><span></span><span></span></span><span>edu<span class="brand-accent">Roll</span></span></a>
+    <nav class="top-nav"><a href="/">Explore</a><a href="/myroll.html" aria-current="page">myRoll</a></nav>
+    <div class="account-actions"><span class="account-status" id="myRollAccount"></span><a class="button button-quiet" href="/">Back to explore ↗</a></div>
+  </header>
+  <main class="myroll-main">
+    <div class="eyebrow"><span class="eyebrow-pulse"></span> YOUR PERSONAL KNOWLEDGE SPACE</div>
+    <div class="myroll-heading"><div><h1>myRoll</h1><p>Every topic you've explored, ready to pick up again.</p></div><button class="button button-quiet" id="myRollRefresh" type="button">Refresh ↻</button></div>
+    <div id="myRollStatus" class="myroll-status" role="status">Loading your learning paths…</div>
+    <div class="myroll-grid" id="myRollGrid"></div>
+  </main>
+  <footer class="site-footer"><a class="brand footer-brand" href="/">eduRoll</a><span>Explore responsibly. Stay curious.</span><span>© <span id="myRollYear"></span> eduRoll</span></footer>
+</body>
+</html>
