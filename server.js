@@ -210,7 +210,7 @@ async function reserveAiUsage(userId, operation) {
   try {
     await client.query("BEGIN");
     await client.query("SELECT pg_advisory_xact_lock(hashtext($1))", [userId]);
-    const count = await client.query("SELECT COUNT(*)::int AS total FROM ai_usage_events WHERE user_id=$1 AND created_at > NOW() - INTERVAL '24 hours'", [userId]);
+    const count = await client.query("SELECT COUNT(*)::int AS total FROM ai_usage_events WHERE user_id=$1 AND status IN ('pending','succeeded') AND created_at > NOW() - INTERVAL '24 hours'", [userId]);
     if (count.rows[0].total >= USER_DAILY_GENERATION_LIMIT) {
       await client.query("ROLLBACK");
       const error = new Error(`You've reached your daily learning-generation limit (${USER_DAILY_GENERATION_LIMIT}). Please come back later.`);
