@@ -473,7 +473,7 @@ $("#deleteAccountButton").addEventListener("click", async () => {
 $("#backHomeButton").addEventListener("click", () => { state.journey = null; showView("home"); window.scrollTo({ top: 0, behavior: "smooth" }); input.focus({ preventScroll: true }); });
 $("#retryButton").addEventListener("click", () => state.retryAction ? state.retryAction() : showView("home"));
 $("#refreshHistoryButton").addEventListener("click", () => loadHistory().catch(error => showToast(error.message)));
-$("#endFollowupForm").addEventListener("submit", event => { event.preventDefault(); const query = new FormData(event.currentTarget).get("query").trim(); if (query && state.journey) runFollowup(state.journey.id, query, null); });
+
 $("#journeyBody").addEventListener("click", event => { const button = event.target.closest("[data-branch-node]"); if (button) growBranch(button); });
 window.addEventListener("scroll", onScroll, { passive: true });
 window.addEventListener("resize", () => requestAnimationFrame(updateScrollScene), { passive: true });
