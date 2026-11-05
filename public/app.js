@@ -1,7 +1,7 @@
 "use strict";
 
 const $ = selector => document.querySelector(selector);
-const state = { csrf: "", user: null, journey: null, lastQuery: "", retryAction: null, resetToken: "", progressTimer: null, scrollFrame: 0, authMode: "login", busyNodes: new Set() };
+const state = { csrf: "", user: null, journey: null, lastQuery: "", retryAction: null, resetToken: "", progressTimer: null, scrollFrame: 0, authMode: "login", busyNodes: new Set(), branchStack: [] };
 const form = $("#searchForm");
 const input = $("#searchInput");
 const authModal = $("#authModal");
@@ -218,20 +218,20 @@ function followupForm(journeyId, nodeId = null, dark = false) {
   return form;
 }
 function nodePathLabel(path) { return path.map(n => n + 1).join("."); }
-function makeBranchToggle(container, count) {
+function branchAction(node, path, journeyId) {
   const control = create("div", "branch-control");
-  const toggle = create("button", "branch-toggle", `Hide branch · ${count} ${count === 1 ? "node" : "nodes"}`);
-  toggle.type = "button";
-  toggle.setAttribute("aria-expanded", "true");
-  toggle.addEventListener("click", () => {
-    const willShow = container.hidden;
-    container.hidden = !willShow;
-    toggle.setAttribute("aria-expanded", String(willShow));
-    toggle.textContent = willShow
-      ? `Hide branch · ${count} ${count === 1 ? "node" : "nodes"}`
-      : `Show branch · ${count} ${count === 1 ? "node" : "nodes"}`;
-  });
-  control.append(toggle);
+  const children = node.children || node.keyPoints || [];
+  const button = create("button", "branch-toggle", children.length ? `Explore branch · ${children.length}` : "Grow branch ↗");
+  button.type = "button";
+  if (children.length) {
+    button.dataset.openBranch = node.id;
+    button.setAttribute("aria-label", `Explore branches from ${node.title}`);
+  } else {
+    button.classList.add("branch-grow-button");
+    button.dataset.branchNode = node.id;
+    button.setAttribute("aria-label", `Grow a learning branch from ${node.title}`);
+  }
+  control.append(button);
   return control;
 }
 function renderNode(node, path, journeyId) {
@@ -241,8 +241,7 @@ function renderNode(node, path, journeyId) {
   article.dataset.depth = node.depth || path.length;
   const heading = create("div", "node-heading");
   const copy = create("div", "node-heading-copy");
-  const label = isMajor ? `STEP ${String(path[0] + 1).padStart(2, "0")}` : `CONCEPT ${path.map(index => index + 1).join(".")}`;
-  copy.append(create("div", "node-index", label));
+  copy.append(create("div", "node-index", isMajor ? `STEP ${String(path[0] + 1).padStart(2, "0")}` : `CONCEPT ${path.map(index => index + 1).join(".")}`));
   copy.append(create("h3", "node-title", node.title));
   heading.append(copy);
   article.append(heading);
@@ -253,22 +252,7 @@ function renderNode(node, path, journeyId) {
     node.examples.forEach(example => examples.append(create("pre", "example-block", example)));
     article.append(examples);
   }
-  const children = Array.isArray(node.children) ? node.children : Array.isArray(node.keyPoints) ? node.keyPoints : [];
-  if (children.length) {
-    const childContainer = create("div", "node-children tree-branches");
-    children.forEach((child, index) => childContainer.append(renderNode(child, [...path, index], journeyId)));
-    article.append(childContainer);
-    article.append(makeBranchToggle(childContainer, children.length));
-  } else {
-    const grow = create("button", "branch-button branch-grow-button", "Grow branch ↗");
-    grow.type = "button";
-    grow.dataset.branchNode = node.id;
-    grow.setAttribute("aria-label", `Grow a learning branch from ${node.title}`);
-    const control = create("div", "branch-control");
-    control.append(grow);
-    article.append(control);
-  }
-  // A contextual follow-up search belongs to each major step only.
+  article.append(branchAction(node, path, journeyId));
   if (isMajor) {
     const actions = create("div", "node-actions");
     actions.append(followupForm(journeyId, node.id));
@@ -276,6 +260,73 @@ function renderNode(node, path, journeyId) {
   }
   return article;
 }
+function flattenBranch(root) {
+  const items = [];
+  const visit = (parent, depth = 0) => {
+    (parent.children || parent.keyPoints || []).forEach(child => {
+      items.push({ node: child, parent, depth });
+      visit(child, depth + 1);
+    });
+  };
+  visit(root);
+  return items;
+}
+function renderBranchWorkspace() {
+  const workspace = $("#branchWorkspace");
+  const rootId = state.branchStack.at(-1);
+  const root = findNode(state.journey?.stages, rootId);
+  if (!root) { closeBranchWorkspace(); return; }
+  $("#journeyBody").hidden = true;
+  $("#sourcesSection").hidden = true;
+  $(".journey-end").hidden = true;
+  workspace.hidden = false;
+  $("#branchWorkspaceTitle").textContent = root.title;
+  const crumbs = $("#branchBreadcrumb");
+  crumbs.replaceChildren();
+  state.branchStack.forEach((id, index) => {
+    const node = findNode(state.journey.stages, id);
+    if (index) crumbs.append(create("span", "branch-crumb-separator", "›"));
+    const crumb = create("button", "branch-crumb", node?.title || "Branch");
+    crumb.type = "button";
+    crumb.addEventListener("click", () => { state.branchStack = state.branchStack.slice(0, index + 1); renderBranchWorkspace(); });
+    crumbs.append(crumb);
+  });
+  const grid = $("#branchWorkspaceGrid");
+  grid.replaceChildren();
+  const items = flattenBranch(root);
+  if (!items.length) grid.append(create("p", "branch-workspace-empty", "No branches yet. Grow a branch from this topic to explore it further."));
+  items.forEach(({ node, parent, depth }) => {
+    const card = create("article", "workspace-node");
+    card.append(create("div", "node-index", depth ? `DEEPER CONCEPT · LEVEL ${depth + 1}` : "BRANCH"));
+    card.append(create("h3", "", node.title));
+    if (node.summary) card.append(create("p", "workspace-summary", node.summary));
+    if (node.content) card.append(create("p", "workspace-content", node.content));
+    card.append(create("p", "workspace-parent", `Branch from: ${parent.title}`));
+    const action = create("button", "branch-toggle", (node.children || node.keyPoints || []).length ? "Open this branch →" : "Grow this branch ↗");
+    action.type = "button";
+    if ((node.children || node.keyPoints || []).length) {
+      action.addEventListener("click", () => { state.branchStack.push(node.id); renderBranchWorkspace(); });
+    } else {
+      action.dataset.workspaceGrow = node.id;
+    }
+    card.append(action);
+    grid.append(card);
+  });
+}
+function openBranchWorkspace(nodeId) {
+  if (!findNode(state.journey?.stages, nodeId)) return;
+  state.branchStack = [nodeId];
+  renderBranchWorkspace();
+  $("#branchWorkspace").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+function closeBranchWorkspace() {
+  state.branchStack = [];
+  $("#branchWorkspace").hidden = true;
+  $("#journeyBody").hidden = false;
+  $("#sourcesSection").hidden = !$("#sourcesGrid").children.length;
+  $(".journey-end").hidden = false;
+}
+
 function normalizeJourney(journey) {
   if (Array.isArray(journey.stages)) {
     journey.stages = journey.stages.map(stage => ({ ...stage, children: stage.children || stage.keyPoints || [] }));
@@ -298,6 +349,10 @@ function renderJourney(journey, options = {}) {
   const tree = create("div", "major-branches");
   (journey.stages || []).forEach((node, index) => tree.append(renderNode(node, [index], journey.id)));
   body.append(tree);
+  state.branchStack = [];
+  $("#branchWorkspace").hidden = true;
+  $("#journeyBody").hidden = false;
+  $(".journey-end").hidden = false;
   const sourcesSection = $("#sourcesSection");
   const sourcesGrid = $("#sourcesGrid");
   sourcesGrid.replaceChildren();
@@ -373,17 +428,12 @@ async function growBranch(button) {
       body: JSON.stringify({ parentNodeId: nodeId, prompt: node?.elaborate_prompt || `Explain ${node?.title || "this topic"} in detail, step by step.` })
     });
     loading.remove();
-    const container = create("div", "node-children tree-branches generated-branch");
-    nodes.forEach((child, index) => container.append(renderNode(child, getNodePath(state.journey.stages, nodeId).concat(index), state.journey.id)));
-    article.append(container);
     node.elaborated = true;
     node.children = [...(node.children || []), ...nodes];
-    const control = create("div", "branch-control");
-    control.append(makeBranchToggle(container, nodes.length));
-    button.closest(".branch-control")?.replaceWith(control);
     state.journey.sources = [...(state.journey.sources || []), ...(sources || [])];
     refreshSources(state.journey.sources);
-    setTimeout(() => container.scrollIntoView({ behavior: "smooth", block: "nearest" }), 120);
+    if (state.branchStack.length) renderBranchWorkspace();
+    else renderJourney(state.journey, { scrollToTop: false });
     updateScrollScene();
   } catch (error) {
     loading.textContent = error.message;
@@ -393,7 +443,29 @@ async function growBranch(button) {
     state.busyNodes.delete(nodeId);
     button.disabled = false;
   }
+} 
+async function growWorkspaceBranch(nodeId) {
+  const node = findNode(state.journey?.stages, nodeId);
+  if (!node || state.busyNodes.has(nodeId)) return;
+  state.busyNodes.add(nodeId);
+  const button = [...$("#branchWorkspaceGrid").querySelectorAll("[data-workspace-grow]")].find(item => item.dataset.workspaceGrow === nodeId);
+  if (button) { button.disabled = true; button.textContent = "Growing…"; }
+  try {
+    const { nodes, sources } = await api(`/api/learning/${state.journey.id}/branches`, {
+      method: "POST",
+      body: JSON.stringify({ parentNodeId: nodeId, prompt: node.elaborate_prompt || `Explain ${node.title} in detail, step by step.` })
+    });
+    node.children = [...(node.children || []), ...nodes];
+    node.elaborated = true;
+    state.journey.sources = [...(state.journey.sources || []), ...(sources || [])];
+    refreshSources(state.journey.sources);
+    renderBranchWorkspace();
+  } catch (error) {
+    showToast(error.message);
+    if (button) { button.disabled = false; button.textContent = "Try again ↗"; }
+  } finally { state.busyNodes.delete(nodeId); }
 }
+
 function findNode(nodes, id) {
   for (const node of nodes || []) {
     if (node.id === id) return node;
@@ -495,7 +567,20 @@ $("#backHomeButton").addEventListener("click", () => { state.journey = null; sho
 $("#retryButton").addEventListener("click", () => state.retryAction ? state.retryAction() : showView("home"));
 
 
-$("#journeyBody").addEventListener("click", event => { const button = event.target.closest("[data-branch-node]"); if (button) growBranch(button); });
+$("#journeyBody").addEventListener("click", event => {
+  const open = event.target.closest("[data-open-branch]");
+  const grow = event.target.closest("[data-branch-node]");
+  if (open) openBranchWorkspace(open.dataset.openBranch);
+  else if (grow) growBranch(grow);
+});
+$("#branchWorkspaceBack").addEventListener("click", () => {
+  if (state.branchStack.length > 1) { state.branchStack.pop(); renderBranchWorkspace(); }
+  else closeBranchWorkspace();
+});
+$("#branchWorkspaceGrid").addEventListener("click", event => {
+  const grow = event.target.closest("[data-workspace-grow]");
+  if (grow) growWorkspaceBranch(grow.dataset.workspaceGrow);
+});
 window.addEventListener("scroll", onScroll, { passive: true });
 window.addEventListener("resize", () => requestAnimationFrame(updateScrollScene), { passive: true });
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") saveProgress(true).catch(() => {}); });
