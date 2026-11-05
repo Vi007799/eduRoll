@@ -108,6 +108,10 @@ async function initialize() {
     state.resetToken = params.get("reset");
     openAuth("resetComplete");
     history.replaceState({}, "", location.pathname);
+  } else if (params.has("signin")) {
+    const returnTo = params.get("returnTo") || "/";
+    sessionStorage.setItem("eduroll:returnTo", returnTo.startsWith("/share/") ? returnTo : "/");
+    openAuth("login");
   } else if (params.has("shared")) {
     const token = params.get("shared");
     if (!/^[A-Za-z0-9_-]{40,60}$/.test(token)) {
@@ -142,6 +146,8 @@ async function handleLogin(event) {
     state.csrf = result.csrfToken;
     updateAccountUI();
     closeAuth();
+    const returnTo = sessionStorage.getItem("eduroll:returnTo");
+    if (returnTo) { sessionStorage.removeItem("eduroll:returnTo"); location.assign(returnTo); return; }
     showToast(`Welcome back, ${state.user.displayName}.`);
     if (state.lastQuery) runSearch(state.lastQuery);
   } catch (error) {
