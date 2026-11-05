@@ -38,6 +38,7 @@ CREATE TABLE IF NOT EXISTS learning_journeys (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+ALTER TABLE learning_journeys ADD COLUMN IF NOT EXISTS share_token TEXT UNIQUE;
 CREATE INDEX IF NOT EXISTS journeys_user_last_opened_idx ON learning_journeys(user_id, last_opened_at DESC);
 
 CREATE TABLE IF NOT EXISTS learning_nodes (
