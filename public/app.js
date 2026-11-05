@@ -347,9 +347,27 @@ function closeBranchWorkspace() {
 }
 
 function normalizeJourney(journey) {
-  if (Array.isArray(journey.stages)) {
-    journey.stages = journey.stages.map(stage => ({ ...stage, children: stage.children || stage.keyPoints || [] }));
-  }
+  const cleanText = value => {
+    const seen = new Set();
+    return String(value || "").split(/\n\s*\n/).map(part => part.trim()).filter(part => {
+      const key = part.toLocaleLowerCase().replace(/\s+/g, " ").replace(/[.!?]+$/, "");
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    }).join("\n\n");
+  };
+  const normalizeNode = node => {
+    const content = cleanText(node.content);
+    const summary = cleanText(node.summary);
+    const norm = value => value.toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+    const summaryKey = norm(summary);
+    const contentKey = norm(content);
+    const distinctSummary = summaryKey && contentKey && (summaryKey === contentKey || contentKey.includes(summaryKey)) ? "" : summary;
+    const children = node.children || node.key_points || node.keyPoints || [];
+    return { ...node, summary: distinctSummary, content, children: children.map(normalizeNode) };
+  };
+  journey.stages = (journey.stages || []).map(normalizeNode);
+  journey.introduction = cleanText(journey.introduction);
   return journey;
 }
 function renderJourney(journey, options = {}) {
