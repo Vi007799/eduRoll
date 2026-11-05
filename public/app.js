@@ -500,6 +500,7 @@ async function growBranch(button) {
     loading.remove();
     node.elaborated = true;
     node.children = [...(node.children || []), ...nodes];
+    state.journey = normalizeJourney(state.journey);
     state.journey.sources = [...(state.journey.sources || []), ...(sources || [])];
     refreshSources(state.journey.sources);
     if (state.branchStack.length) renderBranchWorkspace();
@@ -529,6 +530,7 @@ async function growWorkspaceBranch(nodeId) {
       body: JSON.stringify({ parentNodeId: nodeId, prompt: node.elaborate_prompt || `Explain ${node.title} in detail, step by step.` })
     });
     node.children = [...(node.children || []), ...nodes];
+    state.journey = normalizeJourney(state.journey);
     node.elaborated = true;
     state.journey.sources = [...(state.journey.sources || []), ...(sources || [])];
     refreshSources(state.journey.sources);
