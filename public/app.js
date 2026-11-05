@@ -22,7 +22,6 @@ function setAuthFeedback(message, isError = false) {
 }
 function showView(view) {
   $("#home").hidden = view !== "home";
-  $("#how-it-works").hidden = view !== "home";
   $("#learningView").hidden = view !== "learning";
   $("#loadingView").hidden = view !== "loading";
   $("#errorView").hidden = view !== "error";
@@ -120,7 +119,6 @@ async function initialize() {
     return;
   } else if (requestedJourneyId) {
     const journeyId = requestedJourneyId;
-    history.replaceState({}, "", "/");
     if (!/^[0-9a-f-]{36}$/i.test(journeyId)) {
       $("#errorMessage").textContent = "This saved learning path link is invalid. Open myRoll and select the journey again.";
       showView("error");
@@ -441,7 +439,7 @@ async function runSearch(query) {
 }
 async function runDocumentUpload(file) {
   if (!file) return;
-  const allowed = /\\.(pdf|docx|txt|md)$/i.test(file.name);
+  const allowed = /\.(pdf|docx|txt|md)$/i.test(file.name);
   if (!allowed) { $("#uploadStatus").textContent = "Choose a PDF, Word (.docx), TXT or Markdown file."; return; }
   if (file.size > 10 * 1024 * 1024) { $("#uploadStatus").textContent = "This file is larger than the 10 MB limit."; return; }
   if (!state.user) { openAuth("login"); setAuthFeedback("Sign in to prepare a saved roll from your document."); return; }
