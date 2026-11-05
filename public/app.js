@@ -84,8 +84,60 @@ function openAuth(mode = "login") {
 }
 function closeAuth() { authModal.hidden = true; }
 
+
+async function handleGoogleCredential(response) {
+  const adultConfirmation = $("#loginForm [name=adultConfirmation]").checked;
+  const consent = $("#loginForm [name=consent]").checked;
+  if (!adultConfirmation || !consent) {
+    setAuthFeedback("Please confirm that you are 18 or older and accept the Terms and Privacy Policy before continuing with Google.", true);
+    return;
+  }
+  try {
+    const result = await api("/api/auth/google", {
+      method: "POST",
+      body: JSON.stringify({ credential: response.credential, adultConfirmation: true, consent: true })
+    });
+    state.user = result.user;
+    state.csrf = result.csrfToken;
+    updateAccountUI();
+    closeAuth();
+    const returnTo = sessionStorage.getItem("eduroll:returnTo");
+    if (returnTo) {
+      sessionStorage.removeItem("eduroll:returnTo");
+      location.assign(returnTo);
+      return;
+    }
+    showToast("Signed in with Google.");
+    if (state.lastQuery) runSearch(state.lastQuery);
+  } catch (error) {
+    setAuthFeedback(error.message, true);
+  }
+}
+function initializeGoogleSignIn() {
+  const clientId = document.querySelector('meta[name="google-client-id"]')?.content;
+  const target = $("#googleSignInButton");
+  if (!clientId || !target || !window.google?.accounts?.id || target.dataset.initialized === "true") return;
+  target.dataset.initialized = "true";
+  window.google.accounts.id.initialize({
+    client_id: clientId,
+    callback: handleGoogleCredential,
+    ux_mode: "popup",
+    auto_select: false
+  });
+  window.google.accounts.id.renderButton(target, {
+    type: "standard",
+    theme: "outline",
+    size: "large",
+    shape: "rectangular",
+    text: "continue_with",
+    width: Math.min(340, Math.max(220, target.clientWidth || 300))
+  });
+}
+
 async function initialize() {
   const params = new URLSearchParams(location.search);
+  initializeGoogleSignIn();
+  window.addEventListener("load", initializeGoogleSignIn, { once: true });
   const journeyMatch = location.pathname.match(/^\/journey\/([0-9a-f-]{36})\/?$/i);
   const requestedJourneyId = journeyMatch?.[1] || params.get("journey");
   // Restore the account UI independently so a transient CSRF/session bootstrap
