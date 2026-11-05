@@ -351,7 +351,7 @@ app.post("/api/learning/:journeyId/share", requireAuth, asyncRoute(async (req, r
   if (!journey) return res.status(404).json({ error: "Learning roll not found." });
   const token = journey.share_token || crypto.randomBytes(32).toString("base64url");
   await pool.query("UPDATE learning_journeys SET share_token=$1,updated_at=NOW() WHERE id=$2 AND user_id=$3", [token, journey.id, req.session.userId]);
-  res.json({ url: `${APP_ORIGIN}/?shared=${encodeURIComponent(token)}` });
+  res.json({ url: `${APP_ORIGIN}/shared.html?token=${encodeURIComponent(token)}` });
 }));
 
 app.get("/api/shared/:token", asyncRoute(async (req, res) => {
