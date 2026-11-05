@@ -472,3 +472,9 @@ button:not(:disabled):focus-visible,a:focus-visible,input:focus-visible{outline:
 #uploadButton,#searchButton{cursor:pointer!important}
 #uploadButton:disabled,#searchButton:disabled{cursor:not-allowed!important}
 .footer-brand{gap:0!important}
+
+/* Search focus: keep keyboard accessibility without a blue mouse-click ring. */
+.search-form:focus-within{border-color:#dce3ef!important;box-shadow:0 16px 42px rgba(42,65,113,.09)!important}
+.search-form input:focus{outline:none!important;box-shadow:none!important}
+.search-form input:focus-visible{outline:none!important;box-shadow:none!important}
+#uploadButton{cursor:pointer!important}
