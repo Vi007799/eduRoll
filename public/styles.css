@@ -484,3 +484,10 @@ button:not(:disabled):focus-visible,a:focus-visible,input:focus-visible{outline:
 .google-auth-note{margin:0 0 10px;color:#9ca9bd;font-size:11px;line-height:1.5;text-align:center}
 .google-sign-in-button{display:flex;justify-content:center;min-height:42px;width:100%}
 .google-sign-in-button iframe{max-width:100%}
+
+.google-auth-section{display:grid;gap:10px;margin:0 0 16px}
+.google-auth-section[hidden]{display:none!important}
+.google-sign-in-button{display:flex;justify-content:center;align-items:center;min-height:44px;width:100%;overflow:visible}
+.google-sign-in-button iframe{max-width:100%}
+.google-auth-divider{display:flex;align-items:center;gap:12px;color:#aebbd2;font-size:10px;margin:0}
+.google-auth-divider:before,.google-auth-divider:after{content:"";height:1px;flex:1;background:rgba(150,165,190,.28)}

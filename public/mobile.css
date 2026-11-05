@@ -172,3 +172,14 @@
   .search-form > #searchButton { padding-inline: 8px; }
   .search-form > input[type="search"] { font-size: 16px; }
 }
+
+@media(max-width:760px){
+.auth-dialog{padding-top:27px;scroll-padding-top:16px}
+.auth-dialog .auth-tabs{margin-bottom:13px}
+.google-auth-section{margin:0 0 14px;gap:9px}
+.google-sign-in-button{min-height:46px;justify-content:center}
+.google-sign-in-button iframe{max-width:100%!important}
+.auth-form{gap:11px}
+.auth-form .consent-label{font-size:11px;line-height:1.55}
+.auth-dialog .auth-description{margin-bottom:15px}
+}
