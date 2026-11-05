@@ -238,7 +238,7 @@ function nodePathLabel(path) { return path.map(n => n + 1).join("."); }
 function branchAction(node, path, journeyId) {
   const control = create("div", "branch-control");
   const children = node.children || node.keyPoints || [];
-  if (state.readOnly && !children.length) return control;
+  if (state.readOnly && !children.length) return null;
   const button = create("button", "branch-toggle", children.length ? `Explore branch · ${children.length}` : "Grow branch ↗");
   button.type = "button";
   if (children.length) {
@@ -270,7 +270,8 @@ function renderNode(node, path, journeyId) {
     node.examples.forEach(example => examples.append(create("pre", "example-block", example)));
     article.append(examples);
   }
-  article.append(branchAction(node, path, journeyId));
+  const controls = branchAction(node, path, journeyId);
+  if (controls) article.append(controls);
   if (isMajor && !state.readOnly) {
     const actions = create("div", "node-actions");
     actions.append(followupForm(journeyId, node.id));
