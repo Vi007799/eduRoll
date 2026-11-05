@@ -351,7 +351,7 @@ app.post("/api/learning/:journeyId/share", requireAuth, asyncRoute(async (req, r
   if (!journey) return res.status(404).json({ error: "Learning roll not found." });
   const token = journey.share_token || crypto.randomBytes(32).toString("base64url");
   await pool.query("UPDATE learning_journeys SET share_token=$1,updated_at=NOW() WHERE id=$2 AND user_id=$3", [token, journey.id, req.session.userId]);
-  res.json({ url: `${APP_ORIGIN}/shared.html?token=${encodeURIComponent(token)}` });
+  res.json({ url: `${APP_ORIGIN}/share/${encodeURIComponent(token)}` });
 }));
 
 app.get("/api/shared/:token", asyncRoute(async (req, res) => {
@@ -515,6 +515,11 @@ app.delete("/api/account", requireAuth, asyncRoute(async (req, res) => {
   res.json({ deleted: true });
 }));
 
+app.get("/share/:token", (req, res) => {
+  if (!/^[A-Za-z0-9_-]{40,60}$/.test(String(req.params.token || ""))) return res.status(404).send("This shared roll link is invalid.");
+  res.set("Cache-Control", "no-store");
+  res.sendFile(path.join(__dirname, "public", "shared.html"));
+});
 app.use("/api", (_req, res) => res.status(404).json({ error: "Not found" }));
 app.use(express.static(path.join(__dirname, "public"), { extensions: ["html"], maxAge: isProduction ? "1h" : 0, etag: true }));
 app.get(/.*/, (_req, res) => res.sendFile(path.join(__dirname, "public", "index.html")));
