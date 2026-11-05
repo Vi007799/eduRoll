@@ -73,6 +73,13 @@
       </div>
       <div class="journey-progress" aria-label="Reading progress"><div id="journeyProgressFill"></div></div>
       <div class="journey-body" id="journeyBody"></div>
+      <section class="branch-workspace" id="branchWorkspace" hidden aria-live="polite">
+        <div class="branch-workspace-top">
+          <div><div class="eyebrow">YOUR BRANCH EXPLORER</div><h2 id="branchWorkspaceTitle"></h2><nav id="branchBreadcrumb" class="branch-breadcrumb" aria-label="Branch navigation"></nav></div>
+          <button class="button button-outline" id="branchWorkspaceBack" type="button">← Back to previous branch</button>
+        </div>
+        <div class="branch-workspace-grid" id="branchWorkspaceGrid"></div>
+      </section>
       <section class="sources-section" id="sourcesSection" hidden>
         <div class="eyebrow">FOLLOW THE SOURCES</div>
         <h3>Go a little further.</h3>
@@ -132,7 +139,7 @@
     
   </main>
 
-  <footer class="site-footer"><a class="brand footer-brand" href="/">eduRoll</a><span>Explore responsibly. Stay curious.</span><span>© <span id="year"></span> eduRoll</span></footer>
+  <footer class="site-footer"><a class="brand footer-brand" href="/">edu<span class="brand-accent">Roll</span></a><span>Explore responsibly. Stay curious.</span><span>© <span id="year"></span> eduRoll</span></footer>
 
   <div class="modal-backdrop" id="authModal" hidden>
     <section class="auth-dialog" role="dialog" aria-modal="true" aria-labelledby="authTitle">
