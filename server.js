@@ -371,7 +371,17 @@ app.get("/api/shared/:token", asyncRoute(async (req, res) => {
 app.delete("/api/learning/:journeyId", requireAuth, asyncRoute(async (req, res) => {
   const journey = await ensureOwnedJourney(req.params.journeyId, req.session.userId);
   if (!journey) return res.status(404).json({ error: "Learning roll not found." });
-  await pool.query("DELETE FROM learning_journeys WHERE id=$1 AND user_id=$2", [journey.id, req.session.userId]);
+  await pool.query(
+    `WITH RECURSIVE roll_tree AS (
+       SELECT id FROM learning_journeys WHERE id=$1 AND user_id=$2
+       UNION ALL
+       SELECT child.id FROM learning_journeys child
+       JOIN roll_tree parent ON child.parent_journey_id=parent.id
+       WHERE child.user_id=$2
+     )
+     DELETE FROM learning_journeys WHERE id IN (SELECT id FROM roll_tree) AND user_id=$2`,
+    [journey.id, req.session.userId]
+  );
   res.json({ deleted: true });
 }));
 
