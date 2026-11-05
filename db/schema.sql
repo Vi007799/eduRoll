@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS learning_journeys (
   introduction TEXT NOT NULL,
   progress_node_id UUID,
   progress_ratio NUMERIC(6,5) NOT NULL DEFAULT 0,
+  share_token TEXT UNIQUE,
   last_opened_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
