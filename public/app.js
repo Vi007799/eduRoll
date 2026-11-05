@@ -38,7 +38,7 @@ async function refreshCsrf() {
 async function api(url, options = {}) {
   const method = (options.method || "GET").toUpperCase();
   const headers = new Headers(options.headers || {});
-  if (options.body && !(options.body instanceof FormData)) headers.set("Content-Type", "application/json");
+  if (options.body && typeof options.body === "string" && !(options.body instanceof FormData) && !headers.has("Content-Type")) headers.set("Content-Type", "application/json");
   if (!(["GET", "HEAD", "OPTIONS"].includes(method))) {
     if (!state.csrf) await refreshCsrf();
     headers.set("X-CSRF-Token", state.csrf);
@@ -339,28 +339,42 @@ function closeBranchWorkspace() {
 }
 
 function normalizeJourney(journey) {
-  const cleanText = value => {
-    const seen = new Set();
-    return String(value || "").split(/\n\s*\n/).map(part => part.trim()).filter(part => {
-      const key = part.toLocaleLowerCase().replace(/\s+/g, " ").replace(/[.!?]+$/, "");
-      if (!key || seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    }).join("\n\n");
+  const normalizeText = value => String(value || "").replace(/\r/g, "").trim();
+  const normalizeKey = value => normalizeText(value).toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+  const sentences = value => normalizeText(value).split(/(?<=[.!?])\s+|\n+/).map(part => part.trim()).filter(Boolean);
+  const similar = (a, b) => {
+    const x = normalizeKey(a), y = normalizeKey(b);
+    if (!x || !y) return false;
+    if (x === y || x.includes(y) || y.includes(x)) return true;
+    const A = new Set(x.split(" ").filter(word => word.length > 2));
+    const B = new Set(y.split(" ").filter(word => word.length > 2));
+    if (!A.size || !B.size) return false;
+    let overlap = 0; for (const word of A) if (B.has(word)) overlap++;
+    return overlap / (A.size + B.size - overlap) >= 0.78;
   };
-  const normalizeNode = node => {
-    const content = cleanText(node.content);
-    const summary = cleanText(node.summary);
-    const norm = value => value.toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
-    const summaryKey = norm(summary);
-    const contentKey = norm(content);
-    const distinctSummary = summaryKey && contentKey && (summaryKey === contentKey || contentKey.includes(summaryKey)) ? "" : summary;
+  const normalizeNode = (node, siblingSeen = []) => {
+    const summary = normalizeText(node.summary);
+    const summaryParts = sentences(summary);
+    const contentParts = sentences(node.content);
+    const content = contentParts.filter(sentence => !summaryParts.some(existing => similar(sentence, existing)) && !siblingSeen.some(existing => similar(sentence, existing))).join(" ");
+    const keptSummary = summaryParts.filter(sentence => !contentParts.some(part => similar(sentence, part))).join(" ");
+    const ownSentences = [...summaryParts, ...sentences(content)];
     const children = node.children || node.key_points || node.keyPoints || [];
-    return { ...node, summary: distinctSummary, content, children: children.map(normalizeNode) };
+    const childSeen = [];
+    const normalizedChildren = children.map(child => {
+      const normalized = normalizeNode(child, childSeen);
+      childSeen.push(...sentences(normalized.summary), ...sentences(normalized.content));
+      return normalized;
+    });
+    return { ...node, summary: keptSummary, content, children: normalizedChildren };
   };
-  journey.stages = (journey.stages || []).map(normalizeNode);
-  journey.introduction = cleanText(journey.introduction);
-  return journey;
+  const seen = [];
+  const stages = (journey.stages || []).map(stage => {
+    const normalized = normalizeNode(stage, seen);
+    seen.push(...sentences(normalized.summary), ...sentences(normalized.content));
+    return normalized;
+  });
+  return { ...journey, introduction: normalizeText(journey.introduction), stages };
 }
 function renderJourney(journey, options = {}) {
   state.readOnly = Boolean(options.readOnly);
