@@ -1,6 +1,7 @@
 "use strict";
 const $ = selector => document.querySelector(selector);
 function clean(value){return String(value||"").replace(/\r/g,"").trim()}
+function norm(value){return clean(value).toLocaleLowerCase().replace(/[^\\p{L}\\p{N}]+/gu," ").trim()}
 function key(value){return clean(value).toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu," ").trim()}
 function sentences(value){return clean(value).split(/(?<=[.!?])\s+|\n+/).map(x=>x.trim()).filter(Boolean)}
 function similar(a,b){const x=key(a),y=key(b);if(!x||!y)return false;if(x===y||x.includes(y)||y.includes(x))return true;const A=new Set(x.split(" ").filter(w=>w.length>2)),B=new Set(y.split(" ").filter(w=>w.length>2));let n=0;for(const w of A)if(B.has(w))n++;return A.size&&B.size?n/(A.size+B.size-n)>=.78:false}
