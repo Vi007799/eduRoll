@@ -608,7 +608,6 @@ function onScroll() {
   });
 }
 
-$("#uploadButton").addEventListener("click", () => $("#documentInput").click());
 $("#documentInput").addEventListener("change", event => runDocumentUpload(event.target.files?.[0]));
 
 form.addEventListener("submit", event => {
