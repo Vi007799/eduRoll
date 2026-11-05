@@ -6,10 +6,12 @@
   <meta name="theme-color" content="#050c1c">
   <meta name="description" content="Learn anything progressively with eduRoll. Start with the basics, scroll deeper, and explore every branch of knowledge.">
   <meta name="color-scheme" content="dark">
+  <meta name="google-client-id" content="582976993222-bqa2aq1du47h213dcpeu0v3id5te53hk.apps.googleusercontent.com">
   <title>eduRoll — Explore knowledge, one scroll at a time</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="stylesheet" href="/styles.css?v=3d-world-4">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="/scene3d.js?v=3d-world-3" defer></script>
   <script src="/app.js?v=roll-upload-2" defer></script>
 </head>
@@ -113,6 +115,9 @@
         <label class="consent-label"><input type="checkbox" name="consent" required><span>I agree to the updated <a href="/terms.html" target="_blank" rel="noopener">Terms</a> and <a href="/privacy.html" target="_blank" rel="noopener">Privacy Policy</a>.</span></label>
         <button class="button button-primary auth-submit" type="submit">Sign in <span>↗</span></button>
         <div class="auth-secondary-actions"><button class="text-button" id="forgotPasswordButton" type="button">Forgot password?</button></div>
+        <div class="google-auth-divider"><span>or</span></div>
+        <p class="google-auth-note">Confirm your age and accept the Terms and Privacy Policy above to continue.</p>
+        <div id="googleSignInButton" class="google-sign-in-button" aria-label="Continue with Google"></div>
       </form>
       <form id="registerForm" class="auth-form" hidden>
         <label>Your name<input type="text" name="displayName" autocomplete="name" minlength="2" maxlength="70" required></label>
