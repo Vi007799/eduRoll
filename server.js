@@ -361,7 +361,11 @@ app.get("/api/shared/:token", asyncRoute(async (req, res) => {
   if (!rows[0]) return res.status(404).json({ error: "This shared roll is unavailable or its owner has stopped sharing it." });
   const tree = await buildJourneyTree(rows[0].id);
   res.set("Cache-Control", "no-store");
-  res.json({ journey: tree });
+  res.json({ journey: {
+    id: tree.id, title: tree.title, query: tree.query, intent: tree.intent,
+    introduction: tree.introduction, stages: tree.stages, sources: tree.sources,
+    parent_journey_id: null, progress_ratio: 0
+  } });
 }));
 
 app.delete("/api/learning/:journeyId", requireAuth, asyncRoute(async (req, res) => {
@@ -503,7 +507,7 @@ app.delete("/api/account", requireAuth, asyncRoute(async (req, res) => {
 
 app.use("/api", (_req, res) => res.status(404).json({ error: "Not found" }));
 app.use(express.static(path.join(__dirname, "public"), { extensions: ["html"], maxAge: isProduction ? "1h" : 0, etag: true }));
-app.get("*", (_req, res) => res.sendFile(path.join(__dirname, "public", "index.html")));
+app.get("/{*splat}", (_req, res) => res.sendFile(path.join(__dirname, "public", "index.html")));
 app.use((error, _req, res, _next) => {
   const status = Number(error.status) || 500;
   if (status >= 500) console.error(JSON.stringify({ event: "request_error", status, message: error.message, name: error.name }));
