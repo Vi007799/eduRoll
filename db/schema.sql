@@ -2,6 +2,7 @@ CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   email TEXT NOT NULL UNIQUE,
   password_hash TEXT NOT NULL,
+  google_sub TEXT UNIQUE,
   display_name TEXT NOT NULL,
   email_verified_at TIMESTAMPTZ,
   adult_confirmed_at TIMESTAMPTZ,
