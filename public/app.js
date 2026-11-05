@@ -20,6 +20,44 @@ function setAuthFeedback(message, isError = false) {
   authFeedback.textContent = message || "";
   authFeedback.classList.toggle("error", isError);
 }
+// Keep all internal navigation in the same installed PWA window.
+// The history guard gives Android/iOS standalone mode a predictable back flow.
+let homeBackArmed = false;
+let homeBackTimer = 0;
+let leavingApp = false;
+function pushAppNavigation(view) {
+  try { history.pushState({ edurollNavigation: view }, "", location.href); } catch { /* History may be unavailable in embedded contexts. */ }
+}
+function initializeAppNavigation() {
+  if (!history.state?.edurollNavigation) history.replaceState({ edurollNavigation: "home" }, "", location.href);
+  pushAppNavigation("home-guard");
+}
+window.addEventListener("popstate", event => {
+  if (leavingApp) return;
+  const view = event.state?.edurollNavigation || "home";
+  if (view === "learning" || view === "upload") {
+    state.journey = null;
+    state.branchStack = [];
+    showView("home");
+    window.scrollTo({ top: 0, behavior: "auto" });
+    pushAppNavigation("home-guard");
+    homeBackArmed = false;
+    clearTimeout(homeBackTimer);
+    return;
+  }
+  if (homeBackArmed) {
+    leavingApp = true;
+    clearTimeout(homeBackTimer);
+    history.back();
+    return;
+  }
+  homeBackArmed = true;
+  showToast("Back again to exit");
+  pushAppNavigation("home-guard");
+  clearTimeout(homeBackTimer);
+  homeBackTimer = setTimeout(() => { homeBackArmed = false; }, 2200);
+});
+
 function showView(view) {
   $("#home").hidden = view !== "home";
   $("#learningView").hidden = view !== "learning";
@@ -749,4 +787,4 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
 window.addEventListener("pagehide", () => saveProgress(true).catch(() => {}));
 
 if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));
-initialize();
+initializeAppNavigation();\ninitialize();
