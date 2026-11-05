@@ -165,7 +165,7 @@ async function persistJourney(userId, generated, query, parentJourneyId = null, 
         const point = stage.key_points[j];
         const child = await client.query(
           `INSERT INTO learning_nodes (journey_id,parent_node_id,node_type,order_index,depth,title,summary,content,elaborate_prompt)
-           VALUES ($1,$2,'subtopic',$3,2,$4,$5,$5,$6) RETURNING *`,
+           VALUES ($1,$2,'subtopic',$3,2,$4,$5,'',$6) RETURNING *`,
           [journey.id, node.id, j, point.title, point.description, point.elaborate_prompt || `Explain ${point.title} in detail`]
         );
         createdNodes.at(-1).keyPoints.push(child.rows[0]);
@@ -438,10 +438,10 @@ app.post("/api/learning/:journeyId/branches", requireAuth, branchLimiter, asyncR
   if (!parent) return res.status(404).json({ error: "The selected learning step was not found." });
   if (parent.depth >= MAX_LEARNING_DEPTH) return res.status(409).json({ error: `This branch has reached the maximum depth of ${MAX_LEARNING_DEPTH}. Start a contextual follow-up search to explore a related direction.` });
   const { rows: ancestorRows } = await pool.query(
-    `WITH RECURSIVE ancestors AS (SELECT id,parent_node_id,title,content,depth FROM learning_nodes WHERE id=$1 UNION ALL SELECT n.id,n.parent_node_id,n.title,n.content,n.depth FROM learning_nodes n JOIN ancestors a ON n.id=a.parent_node_id) SELECT title,content FROM ancestors ORDER BY depth`,
+    `WITH RECURSIVE ancestors AS (SELECT id,parent_node_id,title,summary,content,depth FROM learning_nodes WHERE id=$1 UNION ALL SELECT n.id,n.parent_node_id,n.title,n.summary,n.content,n.depth FROM learning_nodes n JOIN ancestors a ON n.id=a.parent_node_id) SELECT title,summary,content FROM ancestors ORDER BY depth`,
     [parent.id]
   );
-  const context = [`Original topic: ${journey.query}`, ...ancestorRows.map(item => `${item.title}: ${item.content.slice(0, 800)}`)].join("\n");
+  const context = [`Original topic: ${journey.query}`, ...ancestorRows.map(item => `${item.title}: ${(item.content || item.summary || "").slice(0, 800)}`)].join("\n");
   const usageId = await reserveAiUsage(req.session.userId, "elaborate");
   let generated;
   try { generated = await generateLearning({ query: parsed.data.prompt, context, branch: true }); }
@@ -464,7 +464,7 @@ app.post("/api/learning/:journeyId/branches", requireAuth, branchLimiter, asyncR
         const point = stage.key_points[j];
         const child = await client.query(
           `INSERT INTO learning_nodes (journey_id,parent_node_id,node_type,order_index,depth,title,summary,content,elaborate_prompt)
-           VALUES ($1,$2,'subtopic',$3,$4,$5,$6,$6,$7) RETURNING *`,
+           VALUES ($1,$2,'subtopic',$3,$4,$5,$6,'',$7) RETURNING *`,
           [journey.id, node.id, j, childDepth + 1, point.title, point.description, point.elaborate_prompt]
         );
         newNodes.at(-1).children.push(child.rows[0]);
