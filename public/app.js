@@ -357,7 +357,7 @@ function normalizeJourney(journey) {
     const summaryParts = sentences(summary);
     const contentParts = sentences(node.content);
     const content = contentParts.filter(sentence => !summaryParts.some(existing => similar(sentence, existing)) && !siblingSeen.some(existing => similar(sentence, existing))).join(" ");
-    const keptSummary = summaryParts.filter(sentence => !contentParts.some(part => similar(sentence, part))).join(" ");
+    const keptSummary = summaryParts.filter(sentence => !siblingSeen.some(existing => similar(sentence, existing))).join(" ");
     const ownSentences = [...summaryParts, ...sentences(content)];
     const children = node.children || node.key_points || node.keyPoints || [];
     const childSeen = [];
