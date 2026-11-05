@@ -94,7 +94,7 @@ function makeCard(journey) {
       menu.hidden = true;
       menuButton.setAttribute("aria-expanded", "false");
     } catch (error) {
-      status.textContent = error.message + " You can copy this link: " + location.origin + "/?shared=…";
+      status.textContent = error.message;
     } finally { share.disabled = false; }
   });
   const remove = document.createElement("button");
