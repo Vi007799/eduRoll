@@ -1,7 +1,7 @@
 "use strict";
 
 const $ = selector => document.querySelector(selector);
-const state = { csrf: "", user: null, journey: null, lastQuery: "", retryAction: null, resetToken: "", progressTimer: null, scrollFrame: 0, authMode: "login", busyNodes: new Set(), branchStack: [] };
+const state = { csrf: "", user: null, journey: null, lastQuery: "", retryAction: null, resetToken: "", progressTimer: null, scrollFrame: 0, authMode: "login", busyNodes: new Set(), branchStack: [], readOnly: false };
 const form = $("#searchForm");
 const input = $("#searchInput");
 const authModal = $("#authModal");
@@ -107,11 +107,28 @@ async function initialize() {
     state.resetToken = params.get("reset");
     openAuth("resetComplete");
     history.replaceState({}, "", location.pathname);
+  } else if (params.has("shared")) {
+    const token = params.get("shared");
+    history.replaceState({}, "", location.pathname);
+    if (!/^[A-Za-z0-9_-]{40,60}$/.test(token)) {
+      $("#errorMessage").textContent = "This shared roll link is invalid.";
+      showView("error");
+      return;
+    }
+    try {
+      showView("loading");
+      const result = await api("/api/shared/" + encodeURIComponent(token));
+      renderJourney(result.journey, { readOnly: true });
+      $("#journeyContext").textContent = "Shared learning roll · Read-only view";
+    } catch (error) {
+      $("#errorMessage").textContent = error.message;
+      showView("error");
+    }
   } else if (params.has("journey")) {
     const journeyId = params.get("journey");
     history.replaceState({}, "", location.pathname);
     if (!/^[0-9a-f-]{36}$/i.test(journeyId)) {
-      $( "#errorMessage" ).textContent = "This saved learning path link is invalid. Open myRoll and select the journey again.";
+      $("#errorMessage").textContent = "This saved learning path link is invalid. Open myRoll and select the journey again.";
       showView("error");
       return;
     }
@@ -221,6 +238,7 @@ function nodePathLabel(path) { return path.map(n => n + 1).join("."); }
 function branchAction(node, path, journeyId) {
   const control = create("div", "branch-control");
   const children = node.children || node.keyPoints || [];
+  if (state.readOnly && !children.length) return control;
   const button = create("button", "branch-toggle", children.length ? `Explore branch · ${children.length}` : "Grow branch ↗");
   button.type = "button";
   if (children.length) {
@@ -253,7 +271,7 @@ function renderNode(node, path, journeyId) {
     article.append(examples);
   }
   article.append(branchAction(node, path, journeyId));
-  if (isMajor) {
+  if (isMajor && !state.readOnly) {
     const actions = create("div", "node-actions");
     actions.append(followupForm(journeyId, node.id));
     article.append(actions);
@@ -302,14 +320,14 @@ function renderBranchWorkspace() {
     if (node.summary) card.append(create("p", "workspace-summary", node.summary));
     if (node.content) card.append(create("p", "workspace-content", node.content));
     card.append(create("p", "workspace-parent", `Branch from: ${parent.title}`));
-    const action = create("button", "branch-toggle", (node.children || node.keyPoints || []).length ? "Open this branch →" : "Grow this branch ↗");
-    action.type = "button";
-    if ((node.children || node.keyPoints || []).length) {
-      action.addEventListener("click", () => { state.branchStack.push(node.id); renderBranchWorkspace(); });
-    } else {
-      action.dataset.workspaceGrow = node.id;
+    const childNodes = node.children || node.keyPoints || [];
+    if (childNodes.length || !state.readOnly) {
+      const action = create("button", "branch-toggle", childNodes.length ? "Open this branch →" : "Grow this branch ↗");
+      action.type = "button";
+      if (childNodes.length) action.addEventListener("click", () => { state.branchStack.push(node.id); renderBranchWorkspace(); });
+      else action.dataset.workspaceGrow = node.id;
+      card.append(action);
     }
-    card.append(action);
     grid.append(card);
   });
 }
@@ -334,10 +352,11 @@ function normalizeJourney(journey) {
   return journey;
 }
 function renderJourney(journey, options = {}) {
+  state.readOnly = Boolean(options.readOnly);
   state.journey = normalizeJourney(journey);
   $("#journeyTitle").textContent = journey.title || journey.query;
   $("#journeyContext").textContent = journey.parent_journey_id ? "A new branch of your wider learning journey" : "Start with the essentials. Follow a branch whenever you want to go deeper.";
-  $("#backParentButton").hidden = !journey.parent_journey_id;
+  $("#backParentButton").hidden = state.readOnly || !journey.parent_journey_id;
   $("#backParentButton").onclick = journey.parent_journey_id ? () => openJourney(journey.parent_journey_id) : null;
   const body = $("#journeyBody");
   body.replaceChildren();
