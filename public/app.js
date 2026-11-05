@@ -70,6 +70,7 @@ function setAuthMode(mode) {
   $("#resetRequestForm").hidden = mode !== "resetRequest";
   $("#resetCompleteForm").hidden = mode !== "resetComplete";
   $("#authTabs").hidden = mode === "resetRequest" || mode === "resetComplete";
+  $("#googleAuthSection").hidden = mode === "resetRequest" || mode === "resetComplete";
   $("#authTitle").textContent = mode === "register" ? "Make room for curiosity." : mode === "resetRequest" ? "Reset your password." : mode === "resetComplete" ? "Choose a new password." : "Welcome back.";
   $("#authDescription").textContent = mode === "register" ? "Create an account to save every path, branch and discovery." : mode === "resetRequest" ? "We'll send a secure reset link if an account exists." : mode === "resetComplete" ? "Choose a strong password you haven't used before." : "Sign in to continue learning and keep your progress across devices.";
   document.querySelectorAll("[data-auth-mode]").forEach(button => button.classList.toggle("active", button.dataset.authMode === mode));
@@ -86,8 +87,9 @@ function closeAuth() { authModal.hidden = true; }
 
 
 async function handleGoogleCredential(response) {
-  const adultConfirmation = $("#loginForm [name=adultConfirmation]").checked;
-  const consent = $("#loginForm [name=consent]").checked;
+  const activeForm = state.authMode === "register" ? $("#registerForm") : $("#loginForm");
+  const adultConfirmation = Boolean(activeForm?.querySelector('[name="adultConfirmation"]')?.checked);
+  const consent = Boolean(activeForm?.querySelector('[name="consent"]')?.checked);
   if (!adultConfirmation || !consent) {
     setAuthFeedback("Please confirm that you are 18 or older and accept the Terms and Privacy Policy before continuing with Google.", true);
     return;
@@ -138,6 +140,8 @@ function initializeGoogleSignIn() {
 async function initialize() {
   const params = new URLSearchParams(location.search);
   initializeGoogleSignIn();
+  const googleScript = document.querySelector('script[src*="accounts.google.com/gsi/client"]');
+  googleScript?.addEventListener("load", initializeGoogleSignIn, { once: true });
   window.addEventListener("load", initializeGoogleSignIn, { once: true });
   const journeyMatch = location.pathname.match(/^\/journey\/([0-9a-f-]{36})\/?$/i);
   const requestedJourneyId = journeyMatch?.[1] || params.get("journey");
