@@ -80,10 +80,16 @@ function makeCard(journey) {
       const { url } = await request("/api/learning/" + encodeURIComponent(journey.id) + "/share", { method: "POST", body: "{}" });
       if (navigator.share) {
         try { await navigator.share({ title: journey.title || "My eduRoll", url }); }
-        catch (error) { if (error.name !== "AbortError") await navigator.clipboard.writeText(url); }
-      } else {
+        catch (error) {
+          if (error.name === "AbortError") return;
+          if (navigator.clipboard?.writeText) { await navigator.clipboard.writeText(url); status.textContent = "Share link copied to clipboard."; }
+          else window.prompt("Copy this share link:", url);
+        }
+      } else if (navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(url);
-        status.textContent = "Share link copied to clipboard.";
+        status.textContent = "Share link copied to clipboard."; 
+      } else {
+        window.prompt("Copy this share link:", url);
       }
       menu.hidden = true;
       menuButton.setAttribute("aria-expanded", "false");
