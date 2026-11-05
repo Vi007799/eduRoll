@@ -11,36 +11,55 @@ function appendText(parent,tag,value,className){
   const el=document.createElement(tag); if(className)el.className=className;
   el.textContent=value;parent.append(el);return el;
 }
+let sharedJourney=null;
+let branchStack=[];
+function nodeChildren(node){return node.children||node.key_points||node.keyPoints||[]}
 function renderNode(node,index,depth=0){
   const card=document.createElement("article");card.className=depth?"shared-child":"shared-card";
   appendText(card,"div",depth?"DEEPER CONCEPT · LEVEL "+(depth+1):"STEP "+String(index+1).padStart(2,"0"),"shared-index");
   appendText(card,depth?"h3":"h2",node.title||"Learning concept");
-  const content=clean(node.content);
-  const summary=clean(node.summary);
-  if(summary && !(norm(content).includes(norm(summary))))appendText(card,"p",summary);
+  const content=clean(node.content),summary=clean(node.summary);
+  if(summary && !norm(content).includes(norm(summary)))appendText(card,"p",summary);
   appendText(card,"p",content);
-  const examples=Array.isArray(node.examples)?node.examples:[];
-  examples.forEach(example=>appendText(card,"p",clean(example)));
-  const children=node.children||node.key_points||node.keyPoints||[];
+  (Array.isArray(node.examples)?node.examples:[]).forEach(example=>appendText(card,"p",clean(example)));
+  const children=nodeChildren(node);
   if(children.length){
-    const group=document.createElement("div");group.className="shared-children";
-    children.forEach((child,i)=>group.append(renderNode(child,i,depth+1)));
-    card.append(group);
+    const button=document.createElement("button");button.type="button";button.className="shared-explore";button.textContent="Explore branch · "+children.length;
+    button.addEventListener("click",()=>{branchStack.push(node.id);renderWorkspace()});
+    card.append(button);
   }
   return card;
+}
+function findNode(id,nodes=sharedJourney.stages||[]){
+ for(const node of nodes){if(node.id===id)return node;const found=findNode(id,nodeChildren(node));if(found)return found;}return null;
+}
+function renderWorkspace(){
+ const workspace=$("#sharedWorkspace"),grid=$("#sharedWorkspaceGrid"),crumbs=$("#sharedBreadcrumbs");
+ const node=branchStack.length?findNode(branchStack[branchStack.length-1]):null;
+ if(!node){workspace.hidden=true;return;}
+ workspace.hidden=false;crumbs.replaceChildren();
+ const back=document.createElement("button");back.type="button";back.className="shared-back";back.textContent="← Back to previous branch";
+ back.addEventListener("click",()=>{branchStack.pop();renderWorkspace()});crumbs.append(back);
+ const title=document.createElement("h2");title.textContent=node.title;crumbs.append(title);
+ grid.replaceChildren();
+ nodeChildren(node).forEach((child,index)=>grid.append(renderNode(child,index,branchStack.length)));
+ workspace.scrollIntoView({behavior:"smooth",block:"start"});
 }
 async function load(){
   const token=new URLSearchParams(location.search).get("token") || location.pathname.split("/")[2];
   if(!token||!/^[A-Za-z0-9_-]{40,60}$/.test(token)){ $("#sharedTitle").textContent="This shared roll link is invalid.";$("#sharedIntro").textContent="Ask the person who shared it to create a new link.";$("#sharedStatus").textContent="";return; }
   try{
-    const response=await fetch("/api/shared/"+encodeURIComponent(token),{cache:"no-store",credentials:"omit"});
+    const authResponse=await fetch("/api/auth/me",{cache:"no-store",credentials:"same-origin"});
+    const auth=await authResponse.json().catch(()=>({}));
+    if(!auth.user){location.replace("/?signin=1&returnTo="+encodeURIComponent("/share/"+token));return;}
+    const response=await fetch("/api/shared/"+encodeURIComponent(token),{cache:"no-store",credentials:"same-origin"});
     const data=await response.json().catch(()=>({}));
     if(!response.ok)throw new Error(data.error||"This shared roll is unavailable.");
-    const journey=data.journey;
+    const journey=data.journey; sharedJourney=journey; branchStack=[];
     $("#sharedTitle").textContent=journey.title||journey.query||"Shared learning roll";
     $("#sharedIntro").textContent=clean(journey.introduction);
     const grid=$("#sharedGrid");grid.replaceChildren();
-    dedupeTree(journey.stages||[]).forEach((node,index)=>grid.append(renderNode(node,index)));
+    journey.stages=dedupeTree(journey.stages||[]); journey.stages.forEach((node,index)=>grid.append(renderNode(node,index)));
     $("#sharedStatus").textContent=grid.children.length?"This is a read-only view of the learning roll.":"This roll has no learning steps to display.";
   }catch(error){
     $("#sharedTitle").textContent="We couldn't open this roll.";
