@@ -9,6 +9,7 @@ const rateLimit = require("express-rate-limit");
 const session = require("express-session");
 const PgSession = require("connect-pg-simple")(session);
 const { Pool } = require("pg");
+const { OAuth2Client } = require("google-auth-library");
 const { z } = require("zod");
 const pdfParse = require("pdf-parse");
 const mammoth = require("mammoth");
@@ -33,6 +34,7 @@ const pool = new Pool({
   connectionTimeoutMillis: 8000
 });
 const mailer = makeMailer();
+const googleClient = new OAuth2Client();
 
 app.disable("x-powered-by");
 const trustProxy = Number(process.env.TRUST_PROXY || (isProduction ? 1 : 0));
@@ -41,10 +43,11 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'"],
+      scriptSrc: ["'self'", "https://accounts.google.com/gsi/client"],
       styleSrc: ["'self'"],
       imgSrc: ["'self'", "data:"],
-      connectSrc: ["'self'"],
+      connectSrc: ["'self'", "https://accounts.google.com"],
+      frameSrc: ["https://accounts.google.com"],
       fontSrc: ["'self'", "data:"],
       objectSrc: ["'none'"],
       baseUri: ["'self'"],
@@ -54,6 +57,7 @@ app.use(helmet({
     }
   },
   crossOriginEmbedderPolicy: false,
+  crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
   referrerPolicy: { policy: "strict-origin-when-cross-origin" },
   hsts: isProduction ? { maxAge: 31536000, includeSubDomains: true, preload: true } : false
 }));
@@ -263,6 +267,67 @@ app.post("/api/auth/register", authLimiter, asyncRoute(async (req, res) => {
     throw error;
   } finally { client.release(); }
   res.status(201).json({ message: "Account created successfully. You can now sign in." });
+}));
+
+app.post("/api/auth/google", authLimiter, asyncRoute(async (req, res) => {
+  const parsed = z.object({
+    credential: z.string().min(100).max(10000),
+    adultConfirmation: z.literal(true),
+    consent: z.literal(true)
+  }).strict().safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: "Confirm that you are 18 or older and accept the Terms and Privacy Policy to continue with Google." });
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  if (!clientId) return res.status(503).json({ error: "Google sign-in is not configured on the server yet." });
+  let payload;
+  try {
+    const ticket = await googleClient.verifyIdToken({ idToken: parsed.data.credential, audience: clientId });
+    payload = ticket.getPayload();
+  } catch (error) {
+    console.warn(JSON.stringify({ event: "google_signin_token_rejected", message: error.message }));
+    return res.status(401).json({ error: "Google could not verify this sign-in. Please try again." });
+  }
+  const email = String(payload?.email || "").trim().toLowerCase();
+  const googleSub = String(payload?.sub || "");
+  if (!payload?.email_verified || !email.endsWith("@gmail.com") || !googleSub) {
+    return res.status(403).json({ error: "Please choose a verified Gmail account." });
+  }
+  const displayName = String(payload.name || email.split("@")[0]).trim().slice(0, 70) || "eduRoll learner";
+  const client = await pool.connect();
+  let user;
+  try {
+    await client.query("BEGIN");
+    const byGoogle = await client.query("SELECT * FROM users WHERE google_sub=$1 FOR UPDATE", [googleSub]);
+    if (byGoogle.rowCount) {
+      user = byGoogle.rows[0];
+      if (user.email !== email) throw Object.assign(new Error("This Google identity is already linked to a different email address."), { status: 409 });
+    } else {
+      const byEmail = await client.query("SELECT * FROM users WHERE email=$1 FOR UPDATE", [email]);
+      if (byEmail.rowCount) {
+        user = byEmail.rows[0];
+        if (user.google_sub && user.google_sub !== googleSub) throw Object.assign(new Error("This eduRoll account is linked to another Google account."), { status: 409 });
+        await client.query("UPDATE users SET google_sub=$1,email_verified_at=COALESCE(email_verified_at,NOW()),adult_confirmed_at=NOW(),updated_at=NOW() WHERE id=$2", [googleSub, user.id]);
+      } else {
+        const randomPassword = crypto.randomBytes(48).toString("base64url");
+        const passwordHash = await argon2.hash(randomPassword, { type: argon2.argon2id, memoryCost: 19456, timeCost: 2, parallelism: 1 });
+        const created = await client.query("INSERT INTO users (email,password_hash,display_name,email_verified_at,adult_confirmed_at,google_sub) VALUES ($1,$2,$3,NOW(),NOW(),$4) RETURNING *", [email,passwordHash,displayName,googleSub]);
+        user = created.rows[0];
+      }
+    }
+    await client.query("UPDATE users SET adult_confirmed_at=NOW(),updated_at=NOW() WHERE id=$1", [user.id]);
+    await client.query("INSERT INTO user_consents (user_id,terms_version,privacy_version) VALUES ($1,'2026-11-03-adult-v1','2026-11-03-adult-v1') ON CONFLICT (user_id) DO UPDATE SET terms_version=EXCLUDED.terms_version,privacy_version=EXCLUDED.privacy_version,accepted_at=NOW()", [user.id]);
+    await client.query("COMMIT");
+  } catch (error) {
+    await client.query("ROLLBACK");
+    if (error.status) return res.status(error.status).json({ error: error.message });
+    if (error.code === "23505") return res.status(409).json({ error: "This Google account is already linked to another eduRoll account." });
+    throw error;
+  } finally { client.release(); }
+  await regenerateSession(req);
+  req.session.userId = user.id;
+  req.session.csrfToken = csrfToken();
+  await saveSession(req);
+  const refreshed = await pool.query("SELECT * FROM users WHERE id=$1", [user.id]);
+  res.json({ user: safeUser(refreshed.rows[0]), csrfToken: req.session.csrfToken });
 }));
 
 app.post("/api/auth/login", authLimiter, asyncRoute(async (req, res) => {
