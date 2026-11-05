@@ -45,7 +45,7 @@ function makeCard(journey) {
   card.className = "myroll-card";
   const main = document.createElement("a");
   main.className = "myroll-card-main";
-  main.href = "/?journey=" + encodeURIComponent(journey.id);
+  main.href = "/journey/" + encodeURIComponent(journey.id);
   const title = document.createElement("h2");
   title.textContent = journey.title || journey.query || "Untitled learning path";
   const meta = document.createElement("p");
