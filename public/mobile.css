@@ -139,3 +139,36 @@
 @media (prefers-reduced-motion: reduce) {
   .world-canvas, .hero-art { animation: none !important; }
 }
+
+/* Correct responsive rules for the actual journey DOM (learning-node/tree-node). */
+@media (max-width: 760px) {
+  .journey-body, .major-branches, .learning-node { min-width: 0; width: 100%; max-width: 100%; }
+  .major-branches { display: grid; grid-template-columns: minmax(0,1fr); gap: 16px; }
+  .learning-node { padding: 18px 14px !important; margin-inline: 0 !important; }
+  .node-heading { display: flex; min-width: 0; gap: 10px; align-items: flex-start; }
+  .node-heading-copy { min-width: 0; flex: 1 1 auto; }
+  .node-title { overflow-wrap: anywhere; word-break: normal; }
+  .node-summary, .node-content { overflow-wrap: anywhere; word-break: normal; font-size: 14px; line-height: 1.75; }
+  .node-examples { min-width: 0; max-width: 100%; }
+  .example-block { max-width: 100%; overflow-x: auto; white-space: pre; -webkit-overflow-scrolling: touch; }
+  .branch-control { display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; }
+  .branch-control button { min-height: 44px; max-width: 100%; white-space: normal; }
+  .node-actions { min-width: 0; width: 100%; }
+  .node-followup { display: flex; width: 100%; min-width: 0; }
+  .node-followup input { min-width: 0; width: 100%; font-size: 16px !important; }
+  .major-step { margin-left: 0 !important; }
+  .concept-node { margin-left: 0 !important; }
+  .button-upload { display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+  .button-upload svg { pointer-events: none; }
+  .search-form { display: flex; flex-wrap: nowrap; }
+  .search-form > input[type="search"] { flex: 1 1 0; min-width: 0; }
+  .search-form > #uploadButton, .search-form > #searchButton { flex: 0 0 auto; }
+  .branch-workspace-grid { min-width: 0; }
+}
+@media (max-width: 360px) {
+  .topbar .top-nav a { font-size: 10px !important; }
+  .search-form { gap: 4px; padding-inline: 8px 6px; }
+  .search-form > #uploadButton { min-width: 40px; padding-inline: 8px !important; }
+  .search-form > #searchButton { padding-inline: 8px; }
+  .search-form > input[type="search"] { font-size: 16px; }
+}
