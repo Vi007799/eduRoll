@@ -1,7 +1,7 @@
 "use strict";
 
 const $ = selector => document.querySelector(selector);
-const state = { csrf: "", user: null, journey: null, lastQuery: "", retryAction: null, resetToken: "", progressTimer: null, scrollFrame: 0, authMode: "login", busyNodes: new Set(), branchStack: [], readOnly: false };
+const state = { csrf: "", user: null, journey: null, lastQuery: "", retryAction: null, resetToken: "", progressTimer: null, scrollFrame: 0, authMode: "login", busyNodes: new Set(), branchStack: [], readOnly: false, pendingUploadFile: null };
 const form = $("#searchForm");
 const input = $("#searchInput");
 const authModal = $("#authModal");
@@ -108,6 +108,7 @@ async function handleGoogleCredential(response) {
       return;
     }
     showToast("Signed in with Google.");
+    if (state.pendingUploadFile) { const file = state.pendingUploadFile; state.pendingUploadFile = null; runDocumentUpload(file); return; }
     if (state.lastQuery) runSearch(state.lastQuery);
   } catch (error) {
     setAuthFeedback(error.message, true);
@@ -201,6 +202,7 @@ async function handleLogin(event) {
     const returnTo = sessionStorage.getItem("eduroll:returnTo");
     if (returnTo) { sessionStorage.removeItem("eduroll:returnTo"); location.assign(returnTo); return; }
     showToast(`Welcome back, ${state.user.displayName}.`);
+    if (state.pendingUploadFile) { const file = state.pendingUploadFile; state.pendingUploadFile = null; runDocumentUpload(file); return; }
     if (state.lastQuery) runSearch(state.lastQuery);
   } catch (error) {
     setAuthFeedback(error.message, true);
@@ -500,7 +502,13 @@ async function runDocumentUpload(file) {
   const allowed = /\.(pdf|docx|txt|md)$/i.test(file.name);
   if (!allowed) { $("#uploadStatus").textContent = "Choose a PDF, Word (.docx), TXT or Markdown file."; return; }
   if (file.size > 10 * 1024 * 1024) { $("#uploadStatus").textContent = "This file is larger than the 10 MB limit."; return; }
-  if (!state.user) { openAuth("login"); setAuthFeedback("Sign in to prepare a saved roll from your document."); return; }
+  if (!state.user) {
+    state.pendingUploadFile = file;
+    $("#uploadStatus").textContent = `${file.name} selected. Sign in to prepare its learning roll.`;
+    openAuth("login");
+    setAuthFeedback("Your selected document is saved here. Sign in and eduRoll will upload it automatically.");
+    return;
+  }
   const button = $("#uploadButton");
   const searchButton = $("#searchButton");
   button.disabled = true; searchButton.disabled = true;
@@ -510,12 +518,14 @@ async function runDocumentUpload(file) {
   try {
     const bytes = new Uint8Array(await file.arrayBuffer());
     const { journey } = await api("/api/learning/upload", { method: "POST", body: bytes, headers: { "Content-Type": "application/octet-stream", "X-File-Name": encodeURIComponent(file.name) } });
+    state.pendingUploadFile = null;
     $("#uploadStatus").textContent = "Your document roll is ready.";
     renderJourney(journey);
   } catch (error) {
     $("#errorMessage").textContent = error.message;
     showView("error");
     $("#uploadStatus").textContent = error.message;
+    state.pendingUploadFile = null;
   } finally {
     button.disabled = false; searchButton.disabled = false;
     $("#documentInput").value = "";
@@ -666,7 +676,19 @@ function onScroll() {
   });
 }
 
-$("#documentInput").addEventListener("change", event => runDocumentUpload(event.target.files?.[0]));
+const documentInput = $("#documentInput");
+$("#uploadButton").addEventListener("click", () => {
+  if ($("#uploadButton").disabled) return;
+  // Clear first so choosing the same file twice still emits a change event.
+  documentInput.value = "";
+  documentInput.click();
+});
+documentInput.addEventListener("change", event => {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  $("#uploadStatus").textContent = `${file.name} selected · ${(file.size / 1024 / 1024).toFixed(2)} MB`;
+  runDocumentUpload(file);
+});
 
 form.addEventListener("submit", event => {
   event.preventDefault();
