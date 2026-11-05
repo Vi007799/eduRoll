@@ -478,3 +478,9 @@ button:not(:disabled):focus-visible,a:focus-visible,input:focus-visible{outline:
 .search-form input:focus{outline:none!important;box-shadow:none!important}
 .search-form input:focus-visible{outline:none!important;box-shadow:none!important}
 #uploadButton{cursor:pointer!important}
+
+.google-auth-divider{display:flex;align-items:center;gap:12px;color:#8c96a8;font-size:11px;margin:16px 0 10px}
+.google-auth-divider:before,.google-auth-divider:after{content:"";height:1px;flex:1;background:rgba(150,165,190,.28)}
+.google-auth-note{margin:0 0 10px;color:#9ca9bd;font-size:11px;line-height:1.5;text-align:center}
+.google-sign-in-button{display:flex;justify-content:center;min-height:42px;width:100%}
+.google-sign-in-button iframe{max-width:100%}
