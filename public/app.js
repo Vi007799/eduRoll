@@ -787,4 +787,5 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
 window.addEventListener("pagehide", () => saveProgress(true).catch(() => {}));
 
 if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));
-initializeAppNavigation();\ninitialize();
+initializeAppNavigation();
+initialize();
