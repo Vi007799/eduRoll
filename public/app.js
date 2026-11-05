@@ -433,7 +433,10 @@ async function growBranch(button) {
     state.journey.sources = [...(state.journey.sources || []), ...(sources || [])];
     refreshSources(state.journey.sources);
     if (state.branchStack.length) renderBranchWorkspace();
-    else renderJourney(state.journey, { scrollToTop: false });
+    else {
+      renderJourney(state.journey, { scrollToTop: false });
+      openBranchWorkspace(nodeId);
+    }
     updateScrollScene();
   } catch (error) {
     loading.textContent = error.message;
