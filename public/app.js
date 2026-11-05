@@ -87,6 +87,8 @@ function closeAuth() { authModal.hidden = true; }
 
 async function initialize() {
   const params = new URLSearchParams(location.search);
+  const journeyMatch = location.pathname.match(/^\/journey\/([0-9a-f-]{36})\/?$/i);
+  const requestedJourneyId = journeyMatch?.[1] || params.get("journey");
   // Restore the account UI independently so a transient CSRF/session bootstrap
   // failure cannot prevent a saved myRoll link from being opened.
   try {
@@ -116,9 +118,9 @@ async function initialize() {
     }
     location.replace("/shared.html?token=" + encodeURIComponent(token));
     return;
-  } else if (params.has("journey")) {
-    const journeyId = params.get("journey");
-    history.replaceState({}, "", location.pathname);
+  } else if (requestedJourneyId) {
+    const journeyId = requestedJourneyId;
+    history.replaceState({}, "", "/");
     if (!/^[0-9a-f-]{36}$/i.test(journeyId)) {
       $("#errorMessage").textContent = "This saved learning path link is invalid. Open myRoll and select the journey again.";
       showView("error");
