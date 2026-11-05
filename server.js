@@ -507,7 +507,7 @@ app.delete("/api/account", requireAuth, asyncRoute(async (req, res) => {
 
 app.use("/api", (_req, res) => res.status(404).json({ error: "Not found" }));
 app.use(express.static(path.join(__dirname, "public"), { extensions: ["html"], maxAge: isProduction ? "1h" : 0, etag: true }));
-app.get("/{*splat}", (_req, res) => res.sendFile(path.join(__dirname, "public", "index.html")));
+app.get(/.*/, (_req, res) => res.sendFile(path.join(__dirname, "public", "index.html")));
 app.use((error, _req, res, _next) => {
   const status = Number(error.status) || 500;
   if (status >= 500) console.error(JSON.stringify({ event: "request_error", status, message: error.message, name: error.name }));
