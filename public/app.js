@@ -109,21 +109,13 @@ async function initialize() {
     history.replaceState({}, "", location.pathname);
   } else if (params.has("shared")) {
     const token = params.get("shared");
-    history.replaceState({}, "", location.pathname);
     if (!/^[A-Za-z0-9_-]{40,60}$/.test(token)) {
-      $("#errorMessage").textContent = "This shared roll link is invalid.";
+      $("#errorMessage").textContent = "This shared roll link is invalid."; 
       showView("error");
       return;
     }
-    try {
-      showView("loading");
-      const result = await api("/api/shared/" + encodeURIComponent(token));
-      renderJourney(result.journey, { readOnly: true });
-      $("#journeyContext").textContent = "Shared learning roll · Read-only view";
-    } catch (error) {
-      $("#errorMessage").textContent = error.message;
-      showView("error");
-    }
+    location.replace("/shared.html?token=" + encodeURIComponent(token));
+    return;
   } else if (params.has("journey")) {
     const journeyId = params.get("journey");
     history.replaceState({}, "", location.pathname);
