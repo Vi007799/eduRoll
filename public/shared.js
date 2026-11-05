@@ -1,14 +1,10 @@
 "use strict";
 const $ = selector => document.querySelector(selector);
-function clean(value) {
-  const seen = new Set();
-  return String(value || "").split(/\n\s*\n/).map(part => part.trim()).filter(part => {
-    const key = part.toLocaleLowerCase().replace(/\s+/g," ").replace(/[.!?]+$/,"");
-    if (!key || seen.has(key)) return false;
-    seen.add(key); return true;
-  }).join("\n\n");
-}
-function norm(value){return clean(value).toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu," ").trim()}
+function clean(value){return String(value||"").replace(/\r/g,"").trim()}
+function key(value){return clean(value).toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu," ").trim()}
+function sentences(value){return clean(value).split(/(?<=[.!?])\s+|\n+/).map(x=>x.trim()).filter(Boolean)}
+function similar(a,b){const x=key(a),y=key(b);if(!x||!y)return false;if(x===y||x.includes(y)||y.includes(x))return true;const A=new Set(x.split(" ").filter(w=>w.length>2)),B=new Set(y.split(" ").filter(w=>w.length>2));let n=0;for(const w of A)if(B.has(w))n++;return A.size&&B.size?n/(A.size+B.size-n)>=.78:false}
+function dedupeTree(nodes,seen=[]){return (nodes||[]).map(node=>{const summary=sentences(node.summary);const content=sentences(node.content).filter(line=>!summary.some(old=>similar(line,old))&&!seen.some(old=>similar(line,old))).join(" ");const keptSummary=summary.filter(line=>!seen.some(old=>similar(line,old))).join(" ");seen.push(...sentences(keptSummary),...sentences(content));const children=dedupeTree(node.children||node.key_points||node.keyPoints||[],[]);return {...node,summary:keptSummary,content,children}})}
 function appendText(parent,tag,value,className){
   if(!value)return null;
   const el=document.createElement(tag); if(className)el.className=className;
@@ -33,7 +29,7 @@ function renderNode(node,index,depth=0){
   return card;
 }
 async function load(){
-  const token=new URLSearchParams(location.search).get("token");
+  const token=new URLSearchParams(location.search).get("token") || location.pathname.split("/")[2];
   if(!token||!/^[A-Za-z0-9_-]{40,60}$/.test(token)){ $("#sharedTitle").textContent="This shared roll link is invalid.";$("#sharedIntro").textContent="Ask the person who shared it to create a new link.";$("#sharedStatus").textContent="";return; }
   try{
     const response=await fetch("/api/shared/"+encodeURIComponent(token),{cache:"no-store",credentials:"omit"});
@@ -43,7 +39,7 @@ async function load(){
     $("#sharedTitle").textContent=journey.title||journey.query||"Shared learning roll";
     $("#sharedIntro").textContent=clean(journey.introduction);
     const grid=$("#sharedGrid");grid.replaceChildren();
-    (journey.stages||[]).forEach((node,index)=>grid.append(renderNode(node,index)));
+    dedupeTree(journey.stages||[]).forEach((node,index)=>grid.append(renderNode(node,index)));
     $("#sharedStatus").textContent=grid.children.length?"This is a read-only view of the learning roll.":"This roll has no learning steps to display.";
   }catch(error){
     $("#sharedTitle").textContent="We couldn't open this roll.";
