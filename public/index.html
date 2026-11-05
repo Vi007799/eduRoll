@@ -90,46 +90,11 @@
     </section>
 
     <section class="loading-view" id="loadingView" hidden aria-live="polite" aria-busy="true">
-      <div class="learning-space" aria-hidden="true">
-        <div class="space-grid"></div>
-        <svg class="space-paths tree-formation" viewBox="0 0 720 390" preserveAspectRatio="xMidYMid meet">
-          <defs>
-            <linearGradient id="treeStroke" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#55d7d0"/><stop offset=".55" stop-color="#729dff"/><stop offset="1" stop-color="#b29aff"/></linearGradient>
-            <filter id="treeGlow"><feGaussianBlur stdDeviation="4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-          </defs>
-          <g fill="none" stroke="url(#treeStroke)" stroke-linecap="round" stroke-linejoin="round" filter="url(#treeGlow)">
-            <path class="tree-path tree-trunk" d="M360 352 C356 300 364 248 360 188 C358 164 360 139 360 112"/>
-          </g>
-          <g fill="none" stroke="url(#treeStroke)" stroke-linecap="round" stroke-linejoin="round" filter="url(#treeGlow)">
-            <path class="tree-path tree-branch branch-a" d="M360 268 C320 252 282 222 248 180 C228 155 205 144 178 136"/>
-            <path class="tree-path tree-branch branch-b" d="M360 230 C401 212 438 180 470 143 C493 117 518 106 548 101"/>
-            <path class="tree-path tree-branch branch-c" d="M360 190 C328 169 307 143 292 112 C279 86 258 73 232 66"/>
-            <path class="tree-path tree-branch branch-d" d="M360 166 C393 145 411 118 426 88 C440 62 462 48 490 42"/>
-          </g>
-          <g class="tree-nodes">
-            <circle class="tree-node trunk-node" cx="360" cy="112" r="8"/>
-            <circle class="tree-node node-a" cx="178" cy="136" r="7"/>
-            <circle class="tree-node node-b" cx="548" cy="101" r="7"/>
-            <circle class="tree-node node-c" cx="232" cy="66" r="6"/>
-            <circle class="tree-node node-d" cx="490" cy="42" r="6"/>
-          </g>
-        </svg>
-        <div class="knowledge-node node-far"><span class="node-core"></span><i></i></div>
-        <div class="knowledge-node node-left"><span class="node-core"></span><i></i></div>
-        <div class="knowledge-node node-center"><span class="node-core"></span><i></i></div>
-        <div class="knowledge-node node-right"><span class="node-core"></span><i></i></div>
-        <div class="knowledge-node node-branch"><span class="node-core"></span><i></i></div>
-        <div class="space-depth depth-one">01 <span>FOUNDATION</span></div>
-        <div class="space-depth depth-two">02 <span>CONNECTION</span></div>
-        <div class="space-depth depth-three">03 <span>DISCOVERY</span></div>
-        <div class="space-cursor"></div>
-      </div>
       <div class="loading-copy">
-        <div class="eyebrow"><span class="eyebrow-pulse"></span> MAPPING YOUR KNOWLEDGE SPACE</div>
-        <h2>Following the thread<span class="loading-ellipsis">...</span></h2>
-        <p>Connecting the first idea to the layers waiting beyond it.</p>
-        <div class="loading-progress" aria-hidden="true"><span></span></div>
-        <span class="loading-caption">A new learning path is taking shape</span>
+        <span class="loading-spinner" aria-hidden="true"></span>
+        <div class="loading-eyebrow">EDUROLL · KNOWLEDGE DISCOVERY</div>
+        <h2>Preparing your roll<span class="loading-ellipsis">...</span></h2>
+        <p>Gathering the ideas and shaping your learning path.</p>
       </div>
     </section>
     <section class="error-view" id="errorView" hidden role="alert">
