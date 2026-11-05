@@ -22,3 +22,29 @@
 .myroll-card-main:focus-visible,.myroll-menu-button:focus-visible,.myroll-menu button:focus-visible{outline:2px solid #a8c0ff;outline-offset:3px}
 .site-footer .footer-brand{color:#eef4ff!important}
 .site-footer .footer-brand .brand-accent{color:#9db8ff!important}
+
+
+/* Robust responsive search field and per-roll menu (including touch browsers). */
+.myroll-search{display:flex!important;position:relative;width:min(680px,100%)!important;min-height:54px;height:54px!important;align-items:center!important;gap:13px!important;padding:0 18px!important;margin:0 0 26px!important;border:1px solid rgba(142,174,235,.38)!important;border-radius:15px!important;background:linear-gradient(145deg,#142b49,#0d1d34)!important;box-shadow:0 12px 32px rgba(0,0,0,.18),inset 0 1px rgba(255,255,255,.04)!important;color:#b9cdf0!important}
+.myroll-search:focus-within{border-color:#8eafff!important;box-shadow:0 0 0 4px rgba(119,158,255,.13),0 12px 32px rgba(0,0,0,.18)!important}
+.myroll-search>span{display:grid!important;place-items:center;flex:0 0 20px;width:20px;height:20px;font-size:0!important;color:#a9c4f3!important}
+.myroll-search>span:before{content:"";width:14px;height:14px;border:2px solid currentColor;border-radius:50%;display:block}
+.myroll-search>span:after{content:"";position:absolute;width:7px;height:2px;background:currentColor;transform:translate(7px,7px) rotate(45deg);border-radius:2px}
+.myroll-search input,.myroll-search input[type=search]{display:block!important;flex:1 1 auto!important;width:100%!important;min-width:0!important;height:100%!important;padding:0!important;margin:0!important;border:0!important;border-radius:0!important;outline:0!important;appearance:none!important;-webkit-appearance:none!important;background:transparent!important;background-color:transparent!important;color:#f4f7ff!important;-webkit-text-fill-color:#f4f7ff!important;box-shadow:none!important;font:500 14px var(--sans)!important}
+.myroll-search input::placeholder{color:#9eb2d2!important;-webkit-text-fill-color:#9eb2d2!important;opacity:1!important}
+.myroll-search input::-webkit-search-cancel-button{-webkit-appearance:none}
+.myroll-card{position:relative!important;overflow:visible!important;isolation:isolate}
+.myroll-card-main{position:relative!important;z-index:1!important;padding-right:58px!important}
+.myroll-card-menu{display:block!important;position:absolute!important;top:12px!important;right:12px!important;z-index:30!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important}
+.myroll-menu-button{display:grid!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;position:relative!important;z-index:31!important;width:40px!important;height:40px!important;min-width:40px!important;min-height:40px!important;padding:0!important;border:1px solid rgba(157,188,244,.52)!important;border-radius:11px!important;background:#29466d!important;color:#f4f7ff!important;touch-action:manipulation!important;-webkit-tap-highlight-color:transparent}
+.myroll-menu-button svg{display:block!important;width:20px!important;height:20px!important;stroke:currentColor!important}
+.myroll-menu{z-index:40!important;min-width:190px!important}
+.site-footer .footer-brand{display:inline-flex!important;gap:0!important;column-gap:0!important;letter-spacing:-.8px}
+.site-footer .footer-brand .brand-accent{margin:0!important;padding:0!important}
+@media(max-width:650px){
+ .myroll-search{width:100%!important;height:52px!important;min-height:52px!important}
+ .myroll-card-menu{top:10px!important;right:10px!important}
+ .myroll-menu-button{width:42px!important;height:42px!important;min-width:42px!important;min-height:42px!important}
+ .myroll-card-main{padding-right:60px!important}
+ .myroll-menu{position:absolute!important;right:0!important;top:47px!important}
+}
