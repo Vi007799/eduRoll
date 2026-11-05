@@ -6,6 +6,7 @@ const path = require("node:path");
 const root = path.join(__dirname, "..");
 const html = fs.readFileSync(path.join(root, "public/index.html"), "utf8");
 const js = fs.readFileSync(path.join(root, "public/app.js"), "utf8");
+const myroll = fs.readFileSync(path.join(root, "public/myroll.js"), "utf8");
 const sw = fs.readFileSync(path.join(root, "public/sw.js"), "utf8");
 const css = fs.readFileSync(path.join(root, "public/styles.css"), "utf8");
 
@@ -34,18 +35,17 @@ test("account and progress controls are present", () => {
   assert.match(js, /\/branches/);
   assert.match(js, /parentNodeId/);
   assert.doesNotMatch(js, /GEMINI_API_KEY/);
-  assert.match(js, /\/api\/learning\/history/);
+  assert.match(myroll, /\/api\/learning\/history/);
 });
 
 
-test("learning provider is OpenAI-based and Gemini credentials are not referenced", () => {
+test("learning provider uses the configured Groq API", () => {
   const learning = fs.readFileSync(path.join(root, "lib/learning.js"), "utf8");
   const env = fs.readFileSync(path.join(root, ".env.example"), "utf8");
-  assert.match(learning, /api\.openai\.com\/v1\/\$\{path\}/);
-  assert.match(learning, /type: "web_search"/);
-  assert.match(learning, /store: false/);
-  assert.match(learning, /moderateText/);
-  assert.match(env, /OPENAI_API_KEY=/);
-  assert.doesNotMatch(learning + env, /GEMINI_API_KEY|generativelanguage\.googleapis\.com|google_search/);
-  assert.match(learning, /OPENAI_ZERO_DATA_RETENTION_CONFIRMED/);
+  assert.match(learning, /api\.groq\.com\/openai\/v1\/chat\/completions/);
+  assert.match(learning, /GROQ_API_KEY/);
+  assert.match(learning, /browser_search/);
+  assert.match(learning, /type: "json_schema"/);
+  assert.match(env, /GROQ_API_KEY=/);
+  assert.match(env, /GROQ_MODEL=/);
 });
