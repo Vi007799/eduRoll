@@ -25,7 +25,7 @@
     "helmet": "^8.0.0",
     "nodemailer": "^6.10.0",
     "pg": "^8.13.1",
-    "zod": "^3.24.2",
+    "zod": "^4.6.7",
     "pdf-parse": "^1.1.4",
     "mammoth": "^1.12.2",
     "google-auth-library": "^11.3.3"
