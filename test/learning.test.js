@@ -22,8 +22,9 @@ if (!learning) {
     assert.deepEqual(learningSchema.parse(validJourney), validJourney);
   });
 
-  test("learning schema rejects a journey without enough stages", () => {
-    assert.throws(() => learningSchema.parse({ ...validJourney, stages: [validJourney.stages[0]] }));
+  test("learning schema accepts a single-topic journey for one-topic documents", () => {
+    const singleTopic = learningSchema.parse({ ...validJourney, stages: [validJourney.stages[0]] });
+    assert.equal(singleTopic.stages.length, 1);
   });
 
   test("prompt instructs progressive and recursively elaboratable learning", () => {
