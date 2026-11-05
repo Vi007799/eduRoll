@@ -377,3 +377,43 @@ header,main,footer{position:relative;z-index:2}
  .tree-branches>.tree-node:after{top:20px!important}
  .branch-control{justify-content:flex-start}
 }
+
+
+/* Branch explorer: keep the primary tree compact and explore deeper paths in a dedicated in-page workspace. */
+.major-branches>.tree-node{padding-bottom:17px}
+.major-branches>.tree-node>.node-summary,.major-branches>.tree-node>.node-content{max-width:760px}
+.tree-node>.branch-control{margin-top:14px}
+.branch-workspace{margin:32px 0 42px;padding:clamp(19px,3vw,34px);border:1px solid rgba(135,161,218,.32);border-radius:22px;background:linear-gradient(145deg,#0d1e36,#132b4b 58%,#102b42);color:#eff5ff;box-shadow:0 22px 65px rgba(12,29,53,.2)}
+.branch-workspace-top{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;padding-bottom:22px;border-bottom:1px solid rgba(176,197,235,.17)}
+.branch-workspace-top .eyebrow{color:#9eb8f4}
+.branch-workspace-top h2{margin:10px 0 8px;font-size:clamp(25px,4vw,39px);letter-spacing:-.055em;color:#f5f8ff}
+.branch-breadcrumb{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.branch-crumb{border:0;background:transparent;padding:3px 0;color:#bdccef;font:600 11px var(--sans);cursor:pointer}
+.branch-crumb:hover{color:#fff;text-decoration:underline}
+.branch-crumb-separator{color:#7f9bcb}
+.branch-workspace-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,245px),1fr));grid-auto-flow:row;align-items:start;gap:15px;padding-top:23px}
+.workspace-node{min-width:0;padding:19px;border:1px solid rgba(150,179,232,.22);border-radius:14px;background:linear-gradient(145deg,rgba(32,58,94,.96),rgba(22,43,72,.96));box-shadow:0 10px 25px rgba(0,0,0,.12)}
+.workspace-node .node-index{color:#a9c0f4;font-size:8px;letter-spacing:.13em}
+.workspace-node h3{font-size:16px;line-height:1.35;letter-spacing:-.025em;color:#f4f7ff;margin:7px 0}
+.workspace-summary{font-size:11px;line-height:1.65;color:#b8c9e5;margin:7px 0}
+.workspace-content{font-size:12px;line-height:1.75;color:#d5e0f2;white-space:pre-wrap;overflow-wrap:anywhere;margin:9px 0}
+.workspace-parent{font-size:9px;color:#90a8cf;margin:14px 0 10px}
+.workspace-node .branch-toggle{margin-top:5px}
+.branch-workspace-empty{grid-column:1/-1;color:#c1d0e9;font-size:12px}
+.branch-workspace[hidden]{display:none!important}
+.footer-brand{color:#eef4ff!important}
+.footer-brand .brand-accent{color:#9db8ff!important}
+@media(max-width:650px){
+ .topbar{gap:9px;padding:0 12px}
+ .topbar .top-nav{display:flex!important;gap:8px!important;margin:0!important;align-items:center}
+ .topbar .top-nav a{display:inline-flex;font-size:10px!important;white-space:nowrap;color:#c5d3ed;padding:7px 8px;border-radius:8px;background:rgba(255,255,255,.06)}
+ .topbar .top-nav a:first-child{display:none}
+ .topbar .brand{font-size:18px;gap:7px;white-space:nowrap}
+ .topbar .brand-symbol{width:24px;height:24px}
+ .account-actions{gap:4px}
+ #authOpenButton{padding:8px 9px;font-size:10px;white-space:nowrap}
+ .branch-workspace{padding:17px;margin:22px 0 30px;border-radius:16px}
+ .branch-workspace-top{display:block}
+ .branch-workspace-top>#branchWorkspaceBack{margin-top:15px}
+ .branch-workspace-grid{grid-template-columns:minmax(0,1fr);gap:11px;padding-top:16px}
+}
