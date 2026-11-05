@@ -346,6 +346,31 @@ app.post("/api/learning/search", requireAuth, searchLimiter, asyncRoute(async (r
   } catch (error) { await finishAiUsage(usageId, false).catch(() => {}); throw error; }
 }));
 
+app.post("/api/learning/:journeyId/share", requireAuth, asyncRoute(async (req, res) => {
+  const journey = await ensureOwnedJourney(req.params.journeyId, req.session.userId);
+  if (!journey) return res.status(404).json({ error: "Learning roll not found." });
+  const token = journey.share_token || crypto.randomBytes(32).toString("base64url");
+  await pool.query("UPDATE learning_journeys SET share_token=$1,updated_at=NOW() WHERE id=$2 AND user_id=$3", [token, journey.id, req.session.userId]);
+  res.json({ url: `${APP_ORIGIN}/?shared=${encodeURIComponent(token)}` });
+}));
+
+app.get("/api/shared/:token", asyncRoute(async (req, res) => {
+  const token = String(req.params.token || "");
+  if (!/^[A-Za-z0-9_-]{40,60}$/.test(token)) return res.status(404).json({ error: "This shared roll is unavailable." });
+  const { rows } = await pool.query("SELECT id,title,query,intent,introduction FROM learning_journeys WHERE share_token=$1", [token]);
+  if (!rows[0]) return res.status(404).json({ error: "This shared roll is unavailable or its owner has stopped sharing it." });
+  const tree = await buildJourneyTree(rows[0].id);
+  res.set("Cache-Control", "no-store");
+  res.json({ journey: tree });
+}));
+
+app.delete("/api/learning/:journeyId", requireAuth, asyncRoute(async (req, res) => {
+  const journey = await ensureOwnedJourney(req.params.journeyId, req.session.userId);
+  if (!journey) return res.status(404).json({ error: "Learning roll not found." });
+  await pool.query("DELETE FROM learning_journeys WHERE id=$1 AND user_id=$2", [journey.id, req.session.userId]);
+  res.json({ deleted: true });
+}));
+
 app.get("/api/learning/:journeyId", requireAuth, asyncRoute(async (req, res) => {
   const journey = await ensureOwnedJourney(req.params.journeyId, req.session.userId);
   if (!journey) return res.status(404).json({ error: "Learning journey not found." });
