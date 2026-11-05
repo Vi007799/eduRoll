@@ -6,3 +6,24 @@
 .shared-breadcrumbs h2{color:#fff;font-size:clamp(20px,3vw,30px);margin:0}
 .shared-workspace-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,270px),1fr));gap:16px;align-items:start}
 .shared-workspace-grid .shared-child{margin:0;min-width:0}
+
+/* Shared-roll layout on phones: readable, scrollable cards with no horizontal overflow. */
+@media (max-width: 760px) {
+  .shared-topbar { min-height: 60px; height: auto; padding: 12px 16px; gap: 10px; }
+  .shared-brand { font-size: 20px; }
+  .shared-label { max-width: 48%; text-align: right; font-size: 7px; line-height: 1.5; }
+  .shared-main { width: calc(100% - 32px); min-height: calc(100svh - 130px); padding: 40px 0 58px; }
+  .shared-main h1 { font-size: clamp(32px, 9vw, 48px); overflow-wrap: anywhere; }
+  .shared-intro { font-size: 14px; line-height: 1.75; margin-bottom: 26px; }
+  .shared-grid { grid-template-columns: minmax(0,1fr); gap: 12px; }
+  .shared-card { min-width: 0; padding: 18px 15px; border-radius: 14px; }
+  .shared-card h2 { font-size: 18px; overflow-wrap: anywhere; }
+  .shared-card p { font-size: 13px; line-height: 1.75; overflow-wrap: anywhere; }
+  .shared-children { margin-left: 5px; padding-left: 10px; }
+  .shared-child { padding: 13px; min-width: 0; }
+  .shared-workspace { margin: 22px 0; padding: 14px 11px; border-radius: 15px; }
+  .shared-breadcrumbs { gap: 8px; margin-bottom: 15px; }
+  .shared-workspace-grid { grid-template-columns: minmax(0,1fr); gap: 11px; }
+  .shared-explore, .shared-back { min-height: 44px; max-width: 100%; white-space: normal; }
+  .shared-footer { padding: 20px 16px calc(20px + env(safe-area-inset-bottom)); gap: 10px 16px; font-size: 9px; }
+}
