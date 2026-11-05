@@ -51,10 +51,10 @@
           <label class="sr-only" for="searchInput">What would you like to understand?</label>
           <input id="searchInput" name="query" type="search" maxlength="180" minlength="2" placeholder="What would you like to understand?" required>
           <input id="documentInput" class="sr-only" type="file" accept=".pdf,.docx,.txt,.md,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/markdown" aria-label="Choose a PDF, Word, text or Markdown document">
-          <label class="button button-upload" id="uploadButton" for="documentInput" aria-label="Upload a document" title="Prepare a roll from a document">
+          <button class="button button-upload" id="uploadButton" type="button" aria-label="Upload a document" aria-describedby="uploadStatus" title="Prepare a roll from a document">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m-5 5 5-5 5 5M4 16v4h16v-4"/></svg>
             <span class="upload-button-label">Upload</span>
-          </label>
+          </button>
           <button class="button button-primary" id="searchButton" type="submit">Explore <span aria-hidden="true">↗</span></button>
         </form>
         <p class="upload-hint" id="uploadStatus" role="status">Upload a PDF, Word (.docx), TXT or Markdown file (10 MB max). The text is sent to the configured AI provider to prepare your roll; do not upload confidential or sensitive documents.</p>
