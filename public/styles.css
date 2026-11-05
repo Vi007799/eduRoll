@@ -458,3 +458,13 @@ button:not(:disabled):focus-visible,a:focus-visible,input:focus-visible{outline:
 @keyframes eduroll-spin{to{transform:rotate(360deg)}}
 @keyframes eduroll-dots{0%{opacity:.25}50%{opacity:1}100%{opacity:.25}}
 @media(prefers-reduced-motion:reduce){.loading-spinner,.loading-ellipsis{animation:none!important}}
+
+
+/* Document upload control integrated into the homepage search field. */
+.button-upload{height:50px!important;flex:0 0 auto;padding:0 13px!important;gap:7px!important;border:1px solid #dce4f2!important;background:#edf2ff!important;color:#294caa!important;box-shadow:none!important}
+.button-upload:hover{background:#e1eaff!important;border-color:#a9bced!important;color:#183b98!important}
+.button-upload svg{display:block;width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.button-upload:disabled{opacity:.55;cursor:wait}
+.upload-hint{margin:10px 2px 0;color:#aebbd2;font-size:10px;line-height:1.5}
+.search-form input[type=search]{min-width:0}
+@media(max-width:650px){.button-upload{height:45px!important;padding:0 10px!important}.upload-button-label{display:none}.button-upload svg{width:19px;height:19px}.upload-hint{font-size:9px;margin-top:8px}}
