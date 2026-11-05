@@ -32,10 +32,10 @@ function initializeAppNavigation() {
   if (!history.state?.edurollNavigation) history.replaceState({ edurollNavigation: "home" }, "", location.href);
   pushAppNavigation("home-guard");
 }
-window.addEventListener("popstate", event => {
+window.addEventListener("popstate", () => {
   if (leavingApp) return;
-  const view = event.state?.edurollNavigation || "home";
-  if (view === "learning" || view === "upload") {
+  const onLearningPage = !$("#learningView").hidden || !$("#loadingView").hidden || !$("#errorView").hidden;
+  if (onLearningPage) {
     state.journey = null;
     state.branchStack = [];
     showView("home");
