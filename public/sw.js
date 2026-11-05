@@ -11,7 +11,7 @@ self.addEventListener("fetch", event => {
     return;
   }
   event.respondWith(caches.match(event.request).then(cached => cached || fetch(event.request).then(response => {
-    if (response.ok && ["/styles.css", "/app.js", "/scene3d.js", "/favicon.svg", "/manifest.webmanifest", "/myroll.css", "/myroll.js", "/shared.css", "/shared.js"].includes(url.pathname)) {
+    if (response.ok && ["/styles.css", "/app.js", "/scene3d.js", "/favicon.svg", "/manifest.webmanifest", "/mobile.css", "/myroll.css", "/myroll.js", "/shared.css", "/shared.js"].includes(url.pathname)) {
       const copy = response.clone(); caches.open(CACHE).then(cache => cache.put(event.request, copy));
     }
     return response;
