@@ -3,7 +3,7 @@ const grid = document.querySelector("#myRollGrid");
 const status = document.querySelector("#myRollStatus");
 const account = document.querySelector("#myRollAccount");
 const search = document.querySelector("#myRollSearch");
-document.querySelector("#myRollYear").textContent = new Date().getFullYear();
+document.querySelector("#myRollYear").textContent = new Date().getFullYear();\n// Keep myRoll links in the current installed app window; avoid opening a second PWA window.\nif (document.referrer && new URL(document.referrer).origin === location.origin) { document.documentElement.dataset.inAppNavigation = "true"; }
 let csrf = "";
 let allJourneys = [];
 async function request(url, options = {}) {
