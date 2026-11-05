@@ -358,15 +358,16 @@ function normalizeJourney(journey) {
     const contentParts = sentences(node.content);
     const content = contentParts.filter(sentence => !summaryParts.some(existing => similar(sentence, existing)) && !siblingSeen.some(existing => similar(sentence, existing))).join(" ");
     const keptSummary = summaryParts.filter(sentence => !siblingSeen.some(existing => similar(sentence, existing))).join(" ");
-    const ownSentences = [...summaryParts, ...sentences(content)];
+    const localSeen = [...siblingSeen, ...sentences(keptSummary), ...sentences(content)];
+    const examples = (node.examples || []).map(normalizeText).filter(example => example && !localSeen.some(existing => similar(example, existing)));
     const children = node.children || node.key_points || node.keyPoints || [];
-    const childSeen = [];
+    const childSeen = [...localSeen, ...examples];
     const normalizedChildren = children.map(child => {
       const normalized = normalizeNode(child, childSeen);
       childSeen.push(...sentences(normalized.summary), ...sentences(normalized.content));
       return normalized;
     });
-    return { ...node, summary: keptSummary, content, children: normalizedChildren };
+    return { ...node, summary: keptSummary, content, examples, children: normalizedChildren };
   };
   const seen = [];
   const stages = (journey.stages || []).map(stage => {
