@@ -550,6 +550,12 @@ app.delete("/api/account", requireAuth, asyncRoute(async (req, res) => {
   res.json({ deleted: true });
 }));
 
+app.get("/journey/:journeyId", (req, res) => {
+  if (!/^[0-9a-f-]{36}$/i.test(String(req.params.journeyId || ""))) return res.status(404).send("This learning roll link is invalid.");
+  res.set("Cache-Control", "no-store");
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
 app.get("/share/:token", (req, res) => {
   if (!/^[A-Za-z0-9_-]{40,60}$/.test(String(req.params.token || ""))) return res.status(404).send("This shared roll link is invalid.");
   res.set("Cache-Control", "no-store");
