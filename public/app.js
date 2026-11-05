@@ -436,6 +436,32 @@ async function runSearch(query) {
     $("#searchButton").innerHTML = 'Explore <span aria-hidden="true">↗</span>';
   }
 }
+async function runDocumentUpload(file) {
+  if (!file) return;
+  const allowed = /\\.(pdf|docx|txt|md)$/i.test(file.name);
+  if (!allowed) { $("#uploadStatus").textContent = "Choose a PDF, Word (.docx), TXT or Markdown file."; return; }
+  if (file.size > 10 * 1024 * 1024) { $("#uploadStatus").textContent = "This file is larger than the 10 MB limit."; return; }
+  if (!state.user) { openAuth("login"); setAuthFeedback("Sign in to prepare a saved roll from your document."); return; }
+  const button = $("#uploadButton");
+  const searchButton = $("#searchButton");
+  button.disabled = true; searchButton.disabled = true;
+  $("#uploadStatus").textContent = "Reading your document and preparing its topic-wise roll…";
+  state.retryAction = () => runDocumentUpload(file);
+  showView("loading");
+  try {
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    const { journey } = await api("/api/learning/upload", { method: "POST", body: bytes, headers: { "Content-Type": "application/octet-stream", "X-File-Name": encodeURIComponent(file.name) } });
+    $("#uploadStatus").textContent = "Your document roll is ready.";
+    renderJourney(journey);
+  } catch (error) {
+    $("#errorMessage").textContent = error.message;
+    showView("error");
+    $("#uploadStatus").textContent = error.message;
+  } finally {
+    button.disabled = false; searchButton.disabled = false;
+    $("#documentInput").value = "";
+  }
+}
 async function runFollowup(journeyId, query, contextNodeId) {
   state.retryAction = () => runFollowup(journeyId, query, contextNodeId);
   if (!state.user) { openAuth("login"); return; }
@@ -578,6 +604,9 @@ function onScroll() {
     scheduleProgressSave();
   });
 }
+
+$("#uploadButton").addEventListener("click", () => $("#documentInput").click());
+$("#documentInput").addEventListener("change", event => runDocumentUpload(event.target.files?.[0]));
 
 form.addEventListener("submit", event => {
   event.preventDefault();
