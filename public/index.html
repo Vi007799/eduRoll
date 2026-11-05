@@ -109,23 +109,24 @@
       <h2 id="authTitle">Welcome back.</h2>
       <p class="auth-description" id="authDescription">Sign in to continue learning and keep your progress across devices.</p>
       <div class="auth-tabs" id="authTabs"><button class="active" type="button" data-auth-mode="login">Sign in</button><button type="button" data-auth-mode="register">Create account</button></div>
+      <div class="google-auth-section" id="googleAuthSection">
+        <div id="googleSignInButton" class="google-sign-in-button" aria-label="Continue with Google"></div>
+        <div class="google-auth-divider"><span>or continue with email</span></div>
+      </div>
       <form id="loginForm" class="auth-form">
         <label>Email address<input type="email" name="email" autocomplete="email" maxlength="254" required></label>
         <label>Password<input type="password" name="password" autocomplete="current-password" required></label>
-        <label class="consent-label"><input type="checkbox" name="adultConfirmation" required><span>I confirm that I am 18 years of age or older.</span></label>
         <label class="consent-label"><input type="checkbox" name="consent" required><span>I agree to the updated <a href="/terms.html" target="_blank" rel="noopener">Terms</a> and <a href="/privacy.html" target="_blank" rel="noopener">Privacy Policy</a>.</span></label>
+        <label class="consent-label"><input type="checkbox" name="adultConfirmation" required><span>I confirm that I am 18 years of age or older.</span></label>
         <button class="button button-primary auth-submit" type="submit">Sign in <span>↗</span></button>
         <div class="auth-secondary-actions"><button class="text-button" id="forgotPasswordButton" type="button">Forgot password?</button></div>
-        <div class="google-auth-divider"><span>or</span></div>
-        <p class="google-auth-note">Confirm your age and accept the Terms and Privacy Policy above to continue.</p>
-        <div id="googleSignInButton" class="google-sign-in-button" aria-label="Continue with Google"></div>
       </form>
       <form id="registerForm" class="auth-form" hidden>
         <label>Your name<input type="text" name="displayName" autocomplete="name" minlength="2" maxlength="70" required></label>
         <label>Email address<input type="email" name="email" autocomplete="email" maxlength="254" required></label>
         <label>Password <span class="field-hint">12+ characters, upper/lowercase and a number</span><input type="password" name="password" autocomplete="new-password" minlength="12" maxlength="128" required></label>
-        <label class="consent-label"><input type="checkbox" name="adultConfirmation" required><span>I confirm that I am 18 years of age or older. eduRoll is currently restricted to adults.</span></label>
         <label class="consent-label"><input type="checkbox" name="consent" required><span>I agree to the <a href="/terms.html" target="_blank" rel="noopener">Terms</a> and <a href="/privacy.html" target="_blank" rel="noopener">Privacy Policy</a>.</span></label>
+        <label class="consent-label"><input type="checkbox" name="adultConfirmation" required><span>I confirm that I am 18 years of age or older. eduRoll is currently restricted to adults.</span></label>
         <button class="button button-primary auth-submit" type="submit">Create account <span>↗</span></button>
       </form>
       <form id="resetRequestForm" class="auth-form" hidden>
