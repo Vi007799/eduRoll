@@ -167,6 +167,6 @@ document.addEventListener("click", () => {
 document.querySelector("#myRollRefresh").addEventListener("click", load);
 load();
 
-// A myRoll page always returns to the previous in-app home screen on the first Back action.
-if (!history.state?.edurollMyRollGuard) history.pushState({ edurollMyRollGuard: true }, "", location.href);
-window.addEventListener("popstate", () => { location.replace("/"); });
+// A normal same-origin document navigation already has the correct previous page
+// in the browser history. Do not replace it with a hard-coded home redirect: that
+// destroys the user's navigation stack and can close an installed PWA on Back.
