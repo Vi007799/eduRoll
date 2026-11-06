@@ -3,7 +3,9 @@ const grid = document.querySelector("#myRollGrid");
 const status = document.querySelector("#myRollStatus");
 const account = document.querySelector("#myRollAccount");
 const search = document.querySelector("#myRollSearch");
-document.querySelector("#myRollYear").textContent = new Date().getFullYear();\n// Keep myRoll links in the current installed app window; avoid opening a second PWA window.\nif (document.referrer && new URL(document.referrer).origin === location.origin) { document.documentElement.dataset.inAppNavigation = "true"; }
+document.querySelector("#myRollYear").textContent = new Date().getFullYear();;
+// Keep myRoll links in the current installed app window; avoid opening a second PWA window.;
+if (document.referrer && new URL(document.referrer).origin === location.origin) { document.documentElement.dataset.inAppNavigation = "true"; }
 let csrf = "";
 let allJourneys = [];
 async function request(url, options = {}) {
@@ -164,3 +166,7 @@ document.addEventListener("click", () => {
 });
 document.querySelector("#myRollRefresh").addEventListener("click", load);
 load();
+
+// A myRoll page always returns to the previous in-app home screen on the first Back action.
+if (!history.state?.edurollMyRollGuard) history.pushState({ edurollMyRollGuard: true }, "", location.href);
+window.addEventListener("popstate", () => { location.replace("/"); });
