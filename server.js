@@ -394,11 +394,15 @@ app.get("/api/auth/me", asyncRoute(async (req, res) => {
 }));
 
 app.get("/api/learning/history", requireAuth, asyncRoute(async (req, res) => {
-  const { rows } = await pool.query(
-    `SELECT id,parent_journey_id,query,title,intent,progress_ratio,last_opened_at,created_at FROM learning_journeys WHERE user_id=$1 ORDER BY last_opened_at DESC LIMIT 40`,
-    [req.session.userId]
-  );
-  res.json({ journeys: rows });
+  const [history, account] = await Promise.all([
+    pool.query(
+      `SELECT id,parent_journey_id,query,title,intent,progress_ratio,last_opened_at,created_at FROM learning_journeys WHERE user_id=$1 ORDER BY last_opened_at DESC LIMIT 40`,
+      [req.session.userId]
+    ),
+    pool.query("SELECT email,display_name FROM users WHERE id=$1", [req.session.userId])
+  ]);
+  res.set("Cache-Control", "no-store");
+  res.json({ journeys: history.rows, account: account.rows[0] || null, count: history.rows.length });
 }));
 
 app.post("/api/learning/search", requireAuth, searchLimiter, asyncRoute(async (req, res) => {
