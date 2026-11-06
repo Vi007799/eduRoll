@@ -147,16 +147,16 @@ async function load() {
       status.textContent = "Sign in to view your saved learning paths.";
       return;
     }
-    account.textContent = "Rolling as " + user.displayName;
+    account.textContent = "Rolling as " + user.displayName + " · " + user.email;
     const { journeys } = await request("/api/learning/history");
     allJourneys = journeys || [];
     if (!allJourneys.length) {
-      status.textContent = "Your saved learning journeys will appear here after you explore a topic.";
+      status.textContent = "No saved rolls were found for " + user.email + ". Make sure this is the same account you used when creating your learning journeys.";
       return;
     }
     renderCards();
   } catch (error) {
-    status.textContent = error.message + " Return to explore and sign in again if your session has expired.";
+    status.textContent = "We couldn't load your history: " + error.message + " Your saved rolls have not been deleted. Refresh or sign in again.";
   }
 }
 search.addEventListener("input", renderCards);
