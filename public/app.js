@@ -29,8 +29,11 @@ function pushAppNavigation(view) {
   try { history.pushState({ edurollNavigation: view }, "", location.href); } catch { /* History may be unavailable in embedded contexts. */ }
 }
 function initializeAppNavigation() {
+  // Two same-document entries give installed browsers a Back event to handle
+  // before they close the standalone window.
   if (!history.state?.edurollNavigation) history.replaceState({ edurollNavigation: "home" }, "", location.href);
   pushAppNavigation("home-guard");
+  pushAppNavigation("home-guard-2");
 }
 window.addEventListener("popstate", () => {
   if (leavingApp) return;
@@ -48,7 +51,6 @@ window.addEventListener("popstate", () => {
   if (homeBackArmed) {
     leavingApp = true;
     clearTimeout(homeBackTimer);
-    history.back();
     return;
   }
   homeBackArmed = true;
